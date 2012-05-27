@@ -84,9 +84,7 @@ namespace MahApps.Metro.Controls.DateTimePicker
         public DateTimeWrapper(DateTime dateTime)
         {
             DateTime = dateTime;
-
             PreferredCulture = new CultureInfo(CurrentLanguageTag);
-
         }
 
         /// <summary>
@@ -95,7 +93,7 @@ namespace MahApps.Metro.Controls.DateTimePicker
         /// <returns>True if it uses a 24-hour clock; false otherwise.</returns>
         public static bool CurrentCultureUsesTwentyFourHourClock()
         {
-            CultureInfo ci = new CultureInfo(CurrentLanguageTag);
+            var ci = new CultureInfo(CurrentLanguageTag);
             return !ci.DateTimeFormat.LongTimePattern.Contains("t");
         }
 
@@ -103,10 +101,7 @@ namespace MahApps.Metro.Controls.DateTimePicker
         {
             get
             {
-                //Windows.Globalization.Language lang = new Windows.Globalization.Language();
-                //return lang.LanguageTag;
-                return "en";
-                //return Windows.ApplicationModel.Resources.Core.ResourceManager.Current.DefaultContext.Languages[0].ToString();
+                return CultureInfo.CurrentCulture.Name;
             }
         }
     }

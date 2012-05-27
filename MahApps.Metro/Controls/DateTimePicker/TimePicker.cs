@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -31,26 +32,22 @@ namespace MahApps.Metro.Controls.DateTimePicker
         public TimePicker()
         {
             DefaultStyleKey = typeof(TimePicker);
-            Value = DateTime.Now.AddHours(-12);
             Loaded += OnTimePickerLoaded;
         }
 
         void OnTimePickerLoaded(object sender, RoutedEventArgs e)
         {
-            int delta = 12;
-
-            var hours = new List<string>();// { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 };
+            var hours = new List<string>();
             for (int i = 0; i < 12; i++)
             {
-                hours.Add((i + 1).ToString().PadLeft(2, '0'));
+                hours.Add((i + 1).ToString(CultureInfo.InvariantCulture).PadLeft(2, '0'));
             }
 
             if (DateTimeWrapper.CurrentCultureUsesTwentyFourHourClock())
             {
-                delta = 0;
                 for (int i = 0; i < 12; i++)
                 {
-                    hours.Add((i + 13).ToString().PadLeft(2, '0'));
+                    hours.Add((i + 13).ToString(CultureInfo.InvariantCulture).PadLeft(2, '0'));
                 }
                 hours.Insert(0, "00");
                 _tertiarySelector.Visibility = Visibility.Collapsed;
@@ -60,13 +57,13 @@ namespace MahApps.Metro.Controls.DateTimePicker
             minutes.Add("00");
             for (var i = 0; i < 59; i++)
             {
-                minutes.Add((i + 1).ToString().PadLeft(2, '0'));
+                minutes.Add((i + 1).ToString(CultureInfo.InvariantCulture).PadLeft(2, '0'));
             }
             _primarySelector.ItemsSource = hours;
             _secondarySelector.ItemsSource = minutes;
             _tertiarySelector.ItemsSource = ampm;
 
-            _primarySelector.SelectedIndex = Value.HasValue ? Value.Value.Hour -1  : DateTime.Now.Hour -1;
+            _primarySelector.SelectedIndex = Value.HasValue ? Value.Value.Hour - 1 : (DateTime.Now.Hour > 12) ? DateTime.Now.Hour - 13 : DateTime.Now.Hour -1;
             _secondarySelector.SelectedIndex = Value.HasValue ? Value.Value.Minute  : DateTime.Now.Minute;
             _tertiarySelector.SelectedIndex = GetAmPmValue(Value);
         }
@@ -91,7 +88,7 @@ namespace MahApps.Metro.Controls.DateTimePicker
         {
             get
             {
-                if (null == _fallbackValueStringFormat)
+                if (string.IsNullOrEmpty(_fallbackValueStringFormat))
                 {
                     // Need to convert LongTimePattern into ShortTimePattern to work around a platform bug
                     // such that only LongTimePattern respects the "24-hour clock" override setting.

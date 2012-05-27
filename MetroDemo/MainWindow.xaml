@@ -3,7 +3,9 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
-        xmlns:MetroDemo="clr-namespace:MetroDemo" mc:Ignorable="d"
+        xmlns:MetroDemo="clr-namespace:MetroDemo"
+                      xmlns:DateTimePicker="clr-namespace:MahApps.Metro.Controls.DateTimePicker;assembly=MahApps.Metro"
+                      mc:Ignorable="d"
         x:Class="MetroDemo.MainWindow"
         Title="MahApps.Metro.Demo"
         Height="469"
@@ -38,8 +40,9 @@
             <TabControl>
                 <TabItem Header="_First set of controls">
                         <Grid>
-
-                            <Grid Margin="0,0,226.999,8">
+                        <DateTimePicker:DatePicker Height="30" VerticalAlignment="Top" />
+                        <DateTimePicker:TimePicker Height="30" VerticalAlignment="Center" />
+                        <Grid Margin="0,0,226.999,8"  Visibility="Collapsed">
                                 <Button Content="Right Click Me"
                                         Click="ButtonClick"
                                         Height="30"
@@ -142,7 +145,7 @@
                                 <Button Content="Button" VerticalAlignment="Bottom" Margin="88.696,0,91.305,8" Style="{DynamicResource SquareButtonStyle}"/>
                                 <ToggleButton Content="TOGGLE BUTTON" Margin="88,303,91.305,0" VerticalAlignment="Top" />
                             <Slider Height="19" HorizontalAlignment="Right" Margin="0,239,91,0" Name="slider1" VerticalAlignment="Top" Width="154" Maximum="100" Value="25" />
-                        </Grid>
+                        </Grid >
                             <WrapPanel Margin="332.001,0,0,8">
                             	<Controls:AppBarButton
                             		VerticalAlignment="Top"
@@ -246,8 +249,7 @@
                                 <ComboBoxItem Content="Test 3" />
                             </ComboBox.Items>
                         </ComboBox>
-                        <Controls:Tile Title="My _Cupcakes"
-                                       Count="23">
+                        <Controls:Tile Title="My _Cupcakes" VerticalContentAlignment="Top" Count="23">
                             <Controls:MetroImage Source="{StaticResource appbar_cupcake}" />
                         </Controls:Tile>
                     </StackPanel>

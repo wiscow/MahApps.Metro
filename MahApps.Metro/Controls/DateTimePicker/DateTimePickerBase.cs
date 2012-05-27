@@ -78,10 +78,10 @@ namespace MahApps.Metro.Controls.DateTimePicker
 
         private static void OnValueStringFormatChanged(DependencyObject o, DependencyPropertyChangedEventArgs e)
         {
-            ((DateTimePickerBase)o).OnValueStringFormatChanged(/*(string)e.OldValue, (string)e.NewValue*/);
+            ((DateTimePickerBase)o).OnValueStringFormatChanged();
         }
 
-        private void OnValueStringFormatChanged(/*string oldValue, string newValue*/)
+        private void OnValueStringFormatChanged()
         {
             UpdateValueString();
         }
@@ -91,7 +91,7 @@ namespace MahApps.Metro.Controls.DateTimePicker
             ValueString = string.Format(PreferredCulture, ValueStringFormat ?? ValueStringFormatFallback, Value);
         }
 
-        public DateTimePickerBase()
+        protected DateTimePickerBase()
         {
             PreferredCulture = new CultureInfo(DateTimeWrapper.CurrentLanguageTag);
         }

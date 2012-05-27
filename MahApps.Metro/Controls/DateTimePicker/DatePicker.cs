@@ -31,8 +31,7 @@ namespace MahApps.Metro.Controls.DateTimePicker
 
         public DatePicker()
         {
-            DefaultStyleKey = typeof (DatePicker);
-            Value = DateTime.Now.Date;
+            DefaultStyleKey = typeof(DatePicker);
             Loaded += OnDatePickerLoaded;
         }
 
@@ -43,7 +42,7 @@ namespace MahApps.Metro.Controls.DateTimePicker
             var years = new List<string>();
 
             var info = new DateTimeFormatInfo();
-            
+
             months = info.MonthNames.ToList();
             if (months.Count == 13)
                 months.RemoveAt(12);
@@ -62,10 +61,9 @@ namespace MahApps.Metro.Controls.DateTimePicker
             _tertiarySelector = GetTemplateChild("TertiarySelector") as ComboBox;
 
             _primarySelector.SelectedIndex = Value.HasValue ? Value.Value.Day - 1 : DateTime.Now.Day - 1;
-            _secondarySelector.SelectedIndex = Value.HasValue ? Value.Value.Month -1 : DateTime.Now.Month-1;
+            _secondarySelector.SelectedIndex = Value.HasValue ? Value.Value.Month - 1 : DateTime.Now.Month - 1;
 
-            if (_secondarySelector != null) 
-                _secondarySelector.SelectionChanged += SecondarySelectorSelectionChanged;
+            _secondarySelector.SelectionChanged += SecondarySelectorSelectionChanged;
         }
 
         void SecondarySelectorSelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -75,16 +73,16 @@ namespace MahApps.Metro.Controls.DateTimePicker
 
             for (var i = 0; i < CultureInfo.CurrentCulture.DateTimeFormat.MonthNames.Count(); i++)
             {
-                if (selected != CultureInfo.CurrentCulture.DateTimeFormat.MonthNames[i]) 
+                if (selected != CultureInfo.CurrentCulture.DateTimeFormat.MonthNames[i])
                     continue;
 
-                month = i+1;
+                month = i + 1;
                 break;
             }
-            
+
             var days = new List<string>();
             var dom = DateTime.DaysInMonth(DateTime.Now.Year, month);
-            for (var i = 0; i <  dom; i++)
+            for (var i = 0; i < dom; i++)
             {
                 days.Add((i + 1).ToString().PadLeft(2, '0'));
             }
