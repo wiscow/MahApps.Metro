@@ -58,6 +58,12 @@
     <Compile Include="Behaviours\StylizedBehaviorCollection.cs" />
     <Compile Include="Behaviours\WindowsSettingBehaviour.cs" />
     <Compile Include="Controls\ClosingWindowEventHandlerArgs.cs" />
+    <Compile Include="Controls\DateTimePicker\DataSource.cs" />
+    <Compile Include="Controls\DateTimePicker\DatePicker.cs" />
+    <Compile Include="Controls\DateTimePicker\DateTimePickerBase.cs" />
+    <Compile Include="Controls\DateTimePicker\DateTimeValueChangedEventArgs.cs" />
+    <Compile Include="Controls\DateTimePicker\DateTimeWrapper.cs" />
+    <Compile Include="Controls\DateTimePicker\TimePicker.cs" />
     <Compile Include="Controls\MetroProgressBar.cs" />
     <Compile Include="Controls\Planerator.cs" />
     <Compile Include="Controls\ProgressRing.cs" />
