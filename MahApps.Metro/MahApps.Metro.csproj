@@ -116,6 +116,7 @@
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Properties\CommonAssemblyInfo.cs" />
     <Compile Include="Theme.cs" />
     <Compile Include="ThemeManager.cs" />
     <AppDesigner Include="Properties\" />
@@ -367,7 +368,11 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <PropertyGroup>
+    <Version>$(BUILD_NUMBER)</Version>
+  </PropertyGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(SolutionDir)\.build\MSBuild.Community.Tasks.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
@@ -375,5 +380,8 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <Target Name="BeforeBuild">
+    <AssemblyInfo CodeLanguage="CS" OutputFile="$(ProjectDir)\Properties\CommonAssemblyInfo.cs" AssemblyTitle="MahApps.Metro" AssemblyDescription="" AssemblyConfiguration="" AssemblyCompany="MahApps" AssemblyProduct="MahApps.Metro" AssemblyCopyright="Copyright © MahApps 2013" AssemblyTrademark="" ComVisible="false" AssemblyVersion="$(Version)" AssemblyFileVersion="$(Version)" />
+  </Target>
   <Target Name="AfterCompile" />
 </Project>
