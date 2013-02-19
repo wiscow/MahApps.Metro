@@ -24,6 +24,43 @@
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Accents/Blue.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Accents/BaseLight.xaml" />
             </ResourceDictionary.MergedDictionaries>
+            <Style x:Key="LargeTextStyle" 
+                   TargetType="{x:Type TabItem}" 
+                   BasedOn="{StaticResource MetroTabItem}">
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="TabItem">
+                            <Label x:Name="root" FontSize="45">
+                                <ContentPresenter ContentSource="Header"  RecognizesAccessKey="True" />
+                            </Label>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsSelected" Value="true">
+                                    <Setter TargetName="root" Property="Foreground">
+                                        <Setter.Value>
+                                            <SolidColorBrush Color="{DynamicResource AccentColor}" />
+                                        </Setter.Value>
+                                    </Setter>
+                                </Trigger>
+
+                                <Trigger Property="IsSelected" Value="false">
+                                    <Setter  TargetName="root" Property="Foreground">
+                                        <Setter.Value>
+                                            <SolidColorBrush Color="{DynamicResource GrayNormal}" />
+                                        </Setter.Value>
+                                    </Setter>
+                                </Trigger>
+                                <Trigger SourceName="root" Property="IsMouseOver" Value="True">
+                                    <Setter  TargetName="root" Property="Foreground">
+                                        <Setter.Value>
+                                            <SolidColorBrush Color="{DynamicResource GrayHover}" />
+                                        </Setter.Value>
+                                    </Setter>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
         </ResourceDictionary>
     </Window.Resources>
 
@@ -74,7 +111,8 @@
                 </MenuItem>
             </Menu>
             <TabControl Grid.Row="1">
-                <TabItem Header="_First set of controls">
+                <TabItem Header="_First set of controls" 
+                         Style="{StaticResource LargeTextStyle}">
                     <Grid>
                        
                             <Grid Margin="0,0,226.999,8">
