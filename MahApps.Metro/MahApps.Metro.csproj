@@ -393,7 +393,7 @@
                   ComVisible="false" 
                   AssemblyVersion="$(Version)" 
                   AssemblyFileVersion="$(Version)" 
-                  AssemblyInformationalVersion="$(GitCommitHash)" />
+                  AssemblyInformationalVersion="Built from hash '$(GitCommitHash)'" />
   </Target>
   <Target Name="AfterCompile" />
   
