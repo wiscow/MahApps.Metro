@@ -154,9 +154,9 @@ namespace MahApps.Metro.Behaviours
                 bool ignoreTaskBar = AssociatedObject as MetroWindow != null && ((MetroWindow)this.AssociatedObject).IgnoreTaskbarOnMaximize;
                 var x = ignoreTaskBar ? monitorInfo.rcMonitor.left : monitorInfo.rcWork.left;
                 var y = ignoreTaskBar ? monitorInfo.rcMonitor.top : monitorInfo.rcWork.top;
-                var cx = ignoreTaskBar ? monitorInfo.rcWork.right : Math.Abs(monitorInfo.rcWork.right - x);
-                var cy = ignoreTaskBar ? monitorInfo.rcMonitor.bottom : Math.Abs(monitorInfo.rcWork.bottom - y);
-                UnsafeNativeMethods.SetWindowPos(_mHWND, new IntPtr(-2), x, y, cx, cy-1, 0x0040);
+                var cx = ignoreTaskBar ? Math.Abs(monitorInfo.rcMonitor.right - x) : Math.Abs(monitorInfo.rcWork.right - x);
+                var cy = ignoreTaskBar ? Math.Abs(monitorInfo.rcMonitor.bottom - y) : Math.Abs(monitorInfo.rcWork.bottom - y - 1);
+                UnsafeNativeMethods.SetWindowPos(_mHWND, new IntPtr(-2), x, y, cx, cy, 0x0040);
             }
         }
 
@@ -247,10 +247,14 @@ namespace MahApps.Metro.Behaviours
                     {
                         if (!ShouldHaveBorder())
                         {
-                            var val = 2;
-                            UnsafeNativeMethods.DwmSetWindowAttribute(_mHWND, 2, ref val, 4);
-                            var m = new MARGINS { bottomHeight = 1, leftWidth = 1, rightWidth = 1, topHeight = 1 };
-                            UnsafeNativeMethods.DwmExtendFrameIntoClientArea(_mHWND, ref m);
+                            MetroWindow w = AssociatedObject as MetroWindow;
+                            if (!(w != null && w.GlowBrush != null))
+                            {
+                                var val = 2;
+                                UnsafeNativeMethods.DwmSetWindowAttribute(_mHWND, 2, ref val, 4);
+                                var m = new MARGINS {bottomHeight = 1, leftWidth = 1, rightWidth = 1, topHeight = 1};
+                                UnsafeNativeMethods.DwmExtendFrameIntoClientArea(_mHWND, ref m);
+                            }
 
                             if (Border != null)
                                 Border.BorderThickness = new Thickness(0);
