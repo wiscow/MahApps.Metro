@@ -15,7 +15,9 @@
             <Setter.Value>
                 <ControlTemplate TargetType="Controls:Tile">
                     <Grid Background="{TemplateBinding Background}">
-                        <StackPanel VerticalAlignment="{TemplateBinding VerticalContentAlignment}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Orientation="Horizontal">
+                        <StackPanel VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                    Orientation="Horizontal">
                             <ContentPresenter RecognizesAccessKey="True" />
                             <TextBlock Text="{TemplateBinding Count}" FontSize="28" VerticalAlignment="Center" />
                         </StackPanel>
@@ -32,11 +34,22 @@
                         </Label>
                     </Grid>
                     <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            
+                            <Setter Property="RenderTransform">
+                                <Setter.Value>
+                                    <ScaleTransform ScaleX="1.03"
+                                                    ScaleY="1.03"
+                                                    CenterX="0.5"
+                                                    CenterY="0.5" />
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
                         <Trigger Property="Button.IsPressed" Value="True">
                             <Setter Property="RenderTransform">
                                 <Setter.Value>
-                                    <ScaleTransform ScaleX="0.98"
-                                                    ScaleY="0.98"
+                                    <ScaleTransform ScaleX="1"
+                                                    ScaleY="1"
                                                     CenterX="0.5"
                                                     CenterY="0.5" />
                                 </Setter.Value>

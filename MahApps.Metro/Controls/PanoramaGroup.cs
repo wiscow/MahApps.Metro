@@ -9,9 +9,19 @@ namespace MahApps.Metro.Controls
     /// </summary>
     public class PanoramaGroup : INotifyPropertyChanged
     {
+        private string _header;
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public string Header { get; private set; }
+        public string Header
+        {
+            get { return _header; }
+            set
+            {
+                _header = value;
+                OnPropertyChanged("Header");
+            }
+        }
+
         public ICollectionView Tiles { get; private set; }
 
         public PanoramaGroup(string header, ICollectionView tiles)

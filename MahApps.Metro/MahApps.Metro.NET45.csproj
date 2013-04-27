@@ -365,6 +365,12 @@
       <DependentUpon>Controls.xaml</DependentUpon>
     </Page>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Bitbucket\MediaGuy\Karl.Framework\Karl.Framework.csproj">
+      <Project>{6E6FBCEA-1FDA-4E66-98BB-FC4DE6292CEA}</Project>
+      <Name>Karl.Framework</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
