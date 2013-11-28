@@ -44,7 +44,6 @@
                         </Label>
                     </Grid>
                     <ControlTemplate.Triggers>
-<<<<<<< HEAD
                         <Trigger Property="IsMouseOver" Value="True">
                             
                             <Setter Property="RenderTransform">
@@ -57,10 +56,7 @@
                             </Setter>
                         </Trigger>
                         <Trigger Property="Button.IsPressed" Value="True">
-=======
-                        <Trigger Property="Button.IsPressed"
-                                 Value="True">
->>>>>>> update1/master
+
                             <Setter Property="RenderTransform">
                                 <Setter.Value>
                                     <ScaleTransform ScaleX="1"

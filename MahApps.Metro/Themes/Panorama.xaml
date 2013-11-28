@@ -10,13 +10,8 @@
     <converters:PanoramaGroupWidthConverter x:Key="conv" />
     <converters:PanoramaGroupHeightConverter x:Key="PanoramaGroupHeightConverter" />
     <converters:PanoramaGroupHeaderConverter x:Key="PanoramaGroupHeaderConverter" />
-
-<<<<<<< HEAD
     <Style x:Key="headerLabelStyle" TargetType="Label">
-=======
-    <Style x:Key="headerLabelStyle"
-           TargetType="Label">
->>>>>>> update1/master
+
         <Setter Property="FontSize"
                 Value="{Binding RelativeSource={RelativeSource AncestorType={x:Type Controls:Panorama}, Mode=FindAncestor}, Path=HeaderFontSize}" />
         <Setter Property="Foreground"
@@ -31,14 +26,6 @@
         </Setter>
         <Setter Property="FontFamily"
                 Value="{Binding RelativeSource={RelativeSource AncestorType={x:Type Controls:Panorama}, Mode=FindAncestor}, Path=HeaderFontFamily}" />
-<<<<<<< HEAD
-        <Setter Property="FontWeight" Value="Light" />
-        <Setter Property="HorizontalAlignment" Value="Left" />
-        <Setter Property="HorizontalContentAlignment" Value="Left" />
-        <Setter Property="VerticalAlignment" Value="Top" />
-        <Setter Property="VerticalContentAlignment" Value="Top" />
-        <Setter Property="Margin" Value="10,0,0,20" />
-=======
         <Setter Property="FontWeight"
                 Value="Light" />
         <Setter Property="HorizontalAlignment"
@@ -68,7 +55,6 @@
                 </Setter>
             </DataTrigger>
         </Style.Triggers>
->>>>>>> update1/master
     </Style>
 
     <wpfConverters:HeaderVisibilityConverter x:Key="HeaderVisibilityConverter" />
@@ -76,7 +62,6 @@
 
     <DataTemplate DataType="{x:Type Controls:PanoramaGroup}">
         <DataTemplate.Resources>
-<<<<<<< HEAD
             <Style x:Key="PanoramaGroupListBoxItem" TargetType="{x:Type ListBoxItem}">
                 <Setter Property="Padding" Value="0" />
                 <Setter Property="Margin" Value="0" />
@@ -90,10 +75,7 @@
             </Style>
 
             <Style x:Key="transparentListBoxItemStyle" TargetType="{x:Type ListBoxItem}">
-=======
-            <Style x:Key="transparentListBoxItemStyle"
-                   TargetType="{x:Type ListBoxItem}">
->>>>>>> update1/master
+
                 <Style.Resources>
                     <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}"
                                      Color="Transparent" />
@@ -131,30 +113,19 @@
                                              RelativeSource="{RelativeSource AncestorType={x:Type Controls:Panorama}, Mode=FindAncestor}" />
                                     <Binding Path="ActualHeight"
                                              RelativeSource="{RelativeSource AncestorType={x:Type Controls:Panorama}, Mode=FindAncestor}" />
-<<<<<<< HEAD
-                                    <Binding Path="ActualHeight" ElementName="header" />
-=======
                                     <Binding Path="ActualHeight"
                                              ElementName="header" />
->>>>>>> update1/master
                                 </MultiBinding>
                             </WrapPanel.Height>
                             <WrapPanel.Width>
                                 <MultiBinding Converter="{StaticResource conv}">
                                     <Binding Path="ItemBox"
                                              RelativeSource="{RelativeSource AncestorType={x:Type Controls:Panorama}, Mode=FindAncestor}" />
-<<<<<<< HEAD
-                                    <Binding Path="ActualHeight" ElementName="items" />
-                                    <Binding
-                                        RelativeSource="{RelativeSource AncestorType={x:Type ListBox}, Mode=FindAncestor}" />
-                                    <Binding Path="Items.Count" ElementName="items" />
-=======
                                     <Binding Path="ActualHeight"
                                              ElementName="items" />
                                     <Binding RelativeSource="{RelativeSource AncestorType={x:Type ListBox}, Mode=FindAncestor}" />
                                     <Binding Path="Items.Count"
                                              ElementName="items" />
->>>>>>> update1/master
                                 </MultiBinding>
                             </WrapPanel.Width>
                         </WrapPanel>
@@ -178,19 +149,12 @@
                                     Value="Hidden" />
                         </Style>
                     </ControlTemplate.Resources>
-
-<<<<<<< HEAD
-                    <ScrollViewer x:Name="PART_ScrollViewer" Background="{TemplateBinding Background}"
-                                  Padding="{TemplateBinding Padding}" SnapsToDevicePixels="true">
-                        <ItemsPresenter Margin="0" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
-=======
                     <ScrollViewer x:Name="PART_ScrollViewer"
                                   Background="{TemplateBinding Background}"
                                   Padding="{TemplateBinding Padding}"
                                   SnapsToDevicePixels="true">
                         <ItemsPresenter Margin="0"
                                         SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
->>>>>>> update1/master
                     </ScrollViewer>
                 </ControlTemplate>
             </Setter.Value>
