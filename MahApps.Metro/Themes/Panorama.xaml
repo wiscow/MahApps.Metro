@@ -9,8 +9,14 @@
 
     <converters:PanoramaGroupWidthConverter x:Key="conv" />
     <converters:PanoramaGroupHeightConverter x:Key="PanoramaGroupHeightConverter" />
+    <converters:PanoramaGroupHeaderConverter x:Key="PanoramaGroupHeaderConverter" />
 
+<<<<<<< HEAD
     <Style x:Key="headerLabelStyle" TargetType="Label">
+=======
+    <Style x:Key="headerLabelStyle"
+           TargetType="Label">
+>>>>>>> update1/master
         <Setter Property="FontSize"
                 Value="{Binding RelativeSource={RelativeSource AncestorType={x:Type Controls:Panorama}, Mode=FindAncestor}, Path=HeaderFontSize}" />
         <Setter Property="Foreground"
@@ -25,12 +31,44 @@
         </Setter>
         <Setter Property="FontFamily"
                 Value="{Binding RelativeSource={RelativeSource AncestorType={x:Type Controls:Panorama}, Mode=FindAncestor}, Path=HeaderFontFamily}" />
+<<<<<<< HEAD
         <Setter Property="FontWeight" Value="Light" />
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="HorizontalContentAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="VerticalContentAlignment" Value="Top" />
         <Setter Property="Margin" Value="10,0,0,20" />
+=======
+        <Setter Property="FontWeight"
+                Value="Light" />
+        <Setter Property="HorizontalAlignment"
+                Value="Left" />
+        <Setter Property="HorizontalContentAlignment"
+                Value="Left" />
+        <Setter Property="VerticalAlignment"
+                Value="Top" />
+        <Setter Property="VerticalContentAlignment"
+                Value="Top" />
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType={x:Type Controls:Panorama}},Path=DynamicGroupHeader}"
+                         Value="False">
+                <Setter Property="Margin"
+                        Value="10,0,0,20" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType={x:Type Controls:Panorama}},Path=DynamicGroupHeader}"
+                         Value="True">
+                <Setter Property="Margin">
+                    <Setter.Value>
+                        <MultiBinding Converter="{StaticResource PanoramaGroupHeaderConverter}">
+                            <Binding RelativeSource="{RelativeSource Self}" />
+                            <Binding RelativeSource="{RelativeSource AncestorType=ScrollViewer}"
+                                     Path="ContentHorizontalOffset" />
+                        </MultiBinding>
+                    </Setter.Value>
+                </Setter>
+            </DataTrigger>
+        </Style.Triggers>
+>>>>>>> update1/master
     </Style>
 
     <wpfConverters:HeaderVisibilityConverter x:Key="HeaderVisibilityConverter" />
@@ -38,6 +76,7 @@
 
     <DataTemplate DataType="{x:Type Controls:PanoramaGroup}">
         <DataTemplate.Resources>
+<<<<<<< HEAD
             <Style x:Key="PanoramaGroupListBoxItem" TargetType="{x:Type ListBoxItem}">
                 <Setter Property="Padding" Value="0" />
                 <Setter Property="Margin" Value="0" />
@@ -51,15 +90,23 @@
             </Style>
 
             <Style x:Key="transparentListBoxItemStyle" TargetType="{x:Type ListBoxItem}">
+=======
+            <Style x:Key="transparentListBoxItemStyle"
+                   TargetType="{x:Type ListBoxItem}">
+>>>>>>> update1/master
                 <Style.Resources>
-                    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Transparent" />
+                    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}"
+                                     Color="Transparent" />
                 </Style.Resources>
-                <Setter Property="Padding" Value="0" />
-                <Setter Property="Margin" Value="0" />
+                <Setter Property="Padding"
+                        Value="0" />
+                <Setter Property="Margin"
+                        Value="0" />
             </Style>
         </DataTemplate.Resources>
 
-        <DockPanel LastChildFill="True" Background="Transparent">
+        <DockPanel LastChildFill="True"
+                   Background="Transparent">
             <Label Style="{StaticResource headerLabelStyle}"
                    Content="{Binding Header}"
                    Visibility="{Binding Header, Converter={StaticResource HeaderVisibilityConverter}}"
@@ -84,17 +131,30 @@
                                              RelativeSource="{RelativeSource AncestorType={x:Type Controls:Panorama}, Mode=FindAncestor}" />
                                     <Binding Path="ActualHeight"
                                              RelativeSource="{RelativeSource AncestorType={x:Type Controls:Panorama}, Mode=FindAncestor}" />
+<<<<<<< HEAD
                                     <Binding Path="ActualHeight" ElementName="header" />
+=======
+                                    <Binding Path="ActualHeight"
+                                             ElementName="header" />
+>>>>>>> update1/master
                                 </MultiBinding>
                             </WrapPanel.Height>
                             <WrapPanel.Width>
                                 <MultiBinding Converter="{StaticResource conv}">
                                     <Binding Path="ItemBox"
                                              RelativeSource="{RelativeSource AncestorType={x:Type Controls:Panorama}, Mode=FindAncestor}" />
+<<<<<<< HEAD
                                     <Binding Path="ActualHeight" ElementName="items" />
                                     <Binding
                                         RelativeSource="{RelativeSource AncestorType={x:Type ListBox}, Mode=FindAncestor}" />
                                     <Binding Path="Items.Count" ElementName="items" />
+=======
+                                    <Binding Path="ActualHeight"
+                                             ElementName="items" />
+                                    <Binding RelativeSource="{RelativeSource AncestorType={x:Type ListBox}, Mode=FindAncestor}" />
+                                    <Binding Path="Items.Count"
+                                             ElementName="items" />
+>>>>>>> update1/master
                                 </MultiBinding>
                             </WrapPanel.Width>
                         </WrapPanel>
@@ -112,14 +172,25 @@
                 <ControlTemplate TargetType="{x:Type ItemsControl}">
                     <ControlTemplate.Resources>
                         <Style TargetType="{x:Type ScrollViewer}">
-                            <Setter Property="HorizontalScrollBarVisibility" Value="Hidden" />
-                            <Setter Property="VerticalScrollBarVisibility" Value="Hidden" />
+                            <Setter Property="HorizontalScrollBarVisibility"
+                                    Value="Hidden" />
+                            <Setter Property="VerticalScrollBarVisibility"
+                                    Value="Hidden" />
                         </Style>
                     </ControlTemplate.Resources>
 
+<<<<<<< HEAD
                     <ScrollViewer x:Name="PART_ScrollViewer" Background="{TemplateBinding Background}"
                                   Padding="{TemplateBinding Padding}" SnapsToDevicePixels="true">
                         <ItemsPresenter Margin="0" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+=======
+                    <ScrollViewer x:Name="PART_ScrollViewer"
+                                  Background="{TemplateBinding Background}"
+                                  Padding="{TemplateBinding Padding}"
+                                  SnapsToDevicePixels="true">
+                        <ItemsPresenter Margin="0"
+                                        SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+>>>>>>> update1/master
                     </ScrollViewer>
                 </ControlTemplate>
             </Setter.Value>

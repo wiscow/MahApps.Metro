@@ -8,11 +8,12 @@ using System.Windows.Media.Animation;
 
 namespace MahApps.Metro.Controls
 {
+    [Obsolete("The ProgressIndicator is now obsolete, use the MetroProgressBar or ProgressBar instead!")]
     public class WidthPercentageConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            var percentage = Double.Parse(parameter.ToString(), new CultureInfo("en-US"));
+            var percentage = Double.Parse(parameter.ToString(), System.Globalization.CultureInfo.InvariantCulture);
             return ((double) value)*percentage;
         }
 
@@ -22,23 +23,24 @@ namespace MahApps.Metro.Controls
         }
     }
 
+    [Obsolete("The ProgressIndicator is now obsolete, use the MetroProgressBar or ProgressBar instead!")]
     public partial class ProgressIndicator
     {
         public ProgressIndicator()
         {
             InitializeComponent();
-            this.DataContext = this;
+
             IsVisibleChanged += (s, e) => ((ProgressIndicator)s).StartStopAnimation();
             DependencyPropertyDescriptor dpd = DependencyPropertyDescriptor.FromProperty(VisibilityProperty, GetType());
             dpd.AddValueChanged(this, (s, e) => ((ProgressIndicator)s).StartStopAnimation());
         }
 
-        public static readonly DependencyProperty ProgressColourProperty = DependencyProperty.RegisterAttached("ProgressColour", typeof(Brush), typeof(ProgressIndicator), new UIPropertyMetadata(null));
+        public static readonly DependencyProperty ProgressColorProperty = DependencyProperty.RegisterAttached("ProgressColor", typeof(Brush), typeof(ProgressIndicator), new UIPropertyMetadata(null));
 
-        public Brush ProgressColour
+        public Brush ProgressColor
         {
-            get { return (Brush)GetValue(ProgressColourProperty); }
-            set { SetValue(ProgressColourProperty, value); }
+            get { return (Brush)GetValue(ProgressColorProperty); }
+            set { SetValue(ProgressColorProperty, value); }
         }
 
         private void StartStopAnimation()

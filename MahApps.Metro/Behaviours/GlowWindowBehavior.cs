@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Interactivity;
+using System.Windows.Media.Animation;
 using MahApps.Metro.Controls;
 
 namespace MahApps.Metro.Behaviours
@@ -11,23 +8,52 @@ namespace MahApps.Metro.Behaviours
     public class GlowWindowBehavior : Behavior<Window>
     {
         private GlowWindow left, right, top, bottom;
+
         protected override void OnAttached()
         {
             base.OnAttached();
 
+            // now glow effect if UseNoneWindowStyle is true or GlowBrush not set
+            var metroWindow = this.AssociatedObject as MetroWindow;
+            if (metroWindow != null && (metroWindow.UseNoneWindowStyle || metroWindow.GlowBrush == null))
+            {
+                return;
+            }
+
             this.AssociatedObject.Loaded += (sender, e) =>
             {
-                left = new GlowWindow(this.AssociatedObject, GlowDirection.Left);
-                right = new GlowWindow(this.AssociatedObject, GlowDirection.Right);
-                top = new GlowWindow(this.AssociatedObject, GlowDirection.Top);
-                bottom = new GlowWindow(this.AssociatedObject, GlowDirection.Bottom);
+                this.left = new GlowWindow(this.AssociatedObject, GlowDirection.Left);
+                this.right = new GlowWindow(this.AssociatedObject, GlowDirection.Right);
+                this.top = new GlowWindow(this.AssociatedObject, GlowDirection.Top);
+                this.bottom = new GlowWindow(this.AssociatedObject, GlowDirection.Bottom);
 
-                Show();
+                this.Show();
 
-                left.Update();
-                right.Update();
-                top.Update();
-                bottom.Update();
+                this.left.Update();
+                this.right.Update();
+                this.top.Update();
+                this.bottom.Update();
+
+                var windowTransitionsEnabled = metroWindow != null && metroWindow.WindowTransitionsEnabled;
+                if (!windowTransitionsEnabled) {
+                    this.left.Opacity = 1;
+                    this.right.Opacity = 1;
+                    this.top.Opacity = 1;
+                    this.bottom.Opacity = 1;
+                }
+                else
+                {
+                    if (this.left.OpacityStoryboard != null
+                        && this.right.OpacityStoryboard != null
+                        && this.top.OpacityStoryboard != null
+                        && this.bottom.OpacityStoryboard != null)
+                    {
+                        this.left.BeginStoryboard(this.left.OpacityStoryboard);
+                        this.right.BeginStoryboard(this.right.OpacityStoryboard);
+                        this.top.BeginStoryboard(this.top.OpacityStoryboard);
+                        this.bottom.BeginStoryboard(this.bottom.OpacityStoryboard);
+                    }
+                }
             };
 
             this.AssociatedObject.Closed += (sender, args) =>
@@ -37,14 +63,6 @@ namespace MahApps.Metro.Behaviours
                 if (top != null) top.Close();
                 if (bottom != null) bottom.Close();
             };
-        }
-
-        public void Hide()
-        {
-            left.Hide();
-            right.Hide();
-            bottom.Hide();
-            top.Hide();
         }
 
         public void Show()

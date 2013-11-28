@@ -3,14 +3,22 @@
                     xmlns:Controls="clr-namespace:MahApps.Metro.Controls">
 
     <Style TargetType="Controls:Tile">
-        <Setter Property="Width" Value="140" />
-        <Setter Property="Height" Value="140" />
-        <Setter Property="Margin" Value="3" />
-        <Setter Property="Foreground" Value="White" />
-        <Setter Property="Background" Value="{DynamicResource AccentColorBrush}" />
-        <Setter Property="HorizontalContentAlignment" Value="Center" />
-        <Setter Property="VerticalContentAlignment" Value="Center" />
-        <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
+        <Setter Property="Width"
+                Value="140" />
+        <Setter Property="Height"
+                Value="140" />
+        <Setter Property="Margin"
+                Value="3" />
+        <Setter Property="Foreground"
+                Value="White" />
+        <Setter Property="Background"
+                Value="{DynamicResource AccentColorBrush}" />
+        <Setter Property="HorizontalContentAlignment"
+                Value="Center" />
+        <Setter Property="VerticalContentAlignment"
+                Value="Center" />
+        <Setter Property="RenderTransformOrigin"
+                Value="0.5,0.5" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Controls:Tile">
@@ -19,7 +27,9 @@
                                     HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                     Orientation="Horizontal">
                             <ContentPresenter RecognizesAccessKey="True" />
-                            <TextBlock Text="{TemplateBinding Count}" FontSize="28" VerticalAlignment="Center" />
+                            <TextBlock Text="{TemplateBinding Count}"
+                                       FontSize="28"
+                                       VerticalAlignment="Center" />
                         </StackPanel>
 
                         <Label Grid.ColumnSpan="2"
@@ -34,6 +44,7 @@
                         </Label>
                     </Grid>
                     <ControlTemplate.Triggers>
+<<<<<<< HEAD
                         <Trigger Property="IsMouseOver" Value="True">
                             
                             <Setter Property="RenderTransform">
@@ -46,6 +57,10 @@
                             </Setter>
                         </Trigger>
                         <Trigger Property="Button.IsPressed" Value="True">
+=======
+                        <Trigger Property="Button.IsPressed"
+                                 Value="True">
+>>>>>>> update1/master
                             <Setter Property="RenderTransform">
                                 <Setter.Value>
                                     <ScaleTransform ScaleX="1"
