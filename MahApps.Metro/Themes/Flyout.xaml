@@ -21,6 +21,7 @@
                     Height="40"
                     Width="40"
                     FontFamily="Segoe UI Symbol"
+                    Foreground="{Binding RelativeSource={RelativeSource AncestorType={x:Type Controls:Flyout}}, Path=Foreground}"
                     FontSize="16"
                     VerticalAlignment="Bottom">
                 <i:Interaction.Triggers>
@@ -30,8 +31,9 @@
                     </i:EventTrigger>
                 </i:Interaction.Triggers>
                 <Rectangle Width="20"
-                           Height="15">
-                    <Rectangle.Fill>
+                           Height="15"
+                           Fill="{Binding RelativeSource={RelativeSource AncestorType={x:Type Controls:Flyout}}, Path=Foreground}">
+                    <Rectangle.OpacityMask>
                         <VisualBrush Stretch="Fill">
                             <VisualBrush.Visual>
                                 <Canvas Width="48"
@@ -43,17 +45,16 @@
                                           Canvas.Left="12"
                                           Canvas.Top="15"
                                           Stretch="Fill"
-                                          Fill="{DynamicResource BlackBrush}"
+                                          Fill="Black"
                                           Data="F1 M 12,22L 12,26L 28.25,26L 21,33L 27.5,33L 37,24L 27.5,15L 21,15L 28.25,22L 12,22 Z " />
                                 </Canvas>
                             </VisualBrush.Visual>
                         </VisualBrush>
-                    </Rectangle.Fill>
+                    </Rectangle.OpacityMask>
                 </Rectangle>
             </Button>
             <TextBlock Text="{Binding}"
                        x:Name="PART_BackButton"
-                       Foreground="{DynamicResource BlackBrush}"
                        FontSize="20"
                        Margin="15,0,0,0"
                        VerticalAlignment="Center" />
@@ -107,6 +108,8 @@
     <ControlTemplate x:Key="FlyoutTemplate"
                      TargetType="{x:Type Controls:Flyout}">
         <Grid x:Name="root"
+              Margin="{TemplateBinding Margin}"
+              Visibility="Hidden"
               Background="{TemplateBinding Background}">
             <Grid.RenderTransform>
                 <TranslateTransform />
@@ -138,14 +141,27 @@
                                     </EasingDoubleKeyFrame.EasingFunction>
                                 </EasingDoubleKeyFrame>
                             </DoubleAnimationUsingKeyFrames>
-                            <DoubleAnimation From="1" To="0" BeginTime="00:00:00"
+                            <DoubleAnimation From="1"
+                                             To="0"
+                                             BeginTime="00:00:00"
                                              Duration="00:00:00.400"
                                              Storyboard.TargetProperty="(UIElement.Opacity)"
                                              Storyboard.TargetName="root" />
+                            <ObjectAnimationUsingKeyFrames BeginTime="00:00:00.500"
+                                                           Storyboard.TargetProperty="(UIElement.Visibility)"
+                                                           Storyboard.TargetName="root">
+                                <DiscreteObjectKeyFrame KeyTime="0"
+                                                        Value="{x:Static Visibility.Hidden}" />
+                            </ObjectAnimationUsingKeyFrames>
                         </Storyboard>
                     </VisualState>
                     <VisualState x:Name="Show">
                         <Storyboard>
+                            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Visibility)"
+                                                           Storyboard.TargetName="root">
+                                <DiscreteObjectKeyFrame KeyTime="0"
+                                                        Value="{x:Static Visibility.Visible}" />
+                            </ObjectAnimationUsingKeyFrames>
                             <DoubleAnimationUsingKeyFrames BeginTime="00:00:00"
                                                            Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)"
                                                            Storyboard.TargetName="root">
@@ -168,7 +184,9 @@
                                     </EasingDoubleKeyFrame.EasingFunction>
                                 </EasingDoubleKeyFrame>
                             </DoubleAnimationUsingKeyFrames>
-                            <DoubleAnimation From="0" To="1" BeginTime="00:00:00"
+                            <DoubleAnimation From="0"
+                                             To="1"
+                                             BeginTime="00:00:00"
                                              Duration="00:00:00.400"
                                              Storyboard.TargetProperty="(UIElement.Opacity)"
                                              Storyboard.TargetName="root" />
@@ -217,8 +235,6 @@
                 Value="Stretch" />
         <Setter Property="HeaderTemplate"
                 Value="{StaticResource HeaderTemplate}" />
-        <Setter Property="Background"
-                Value="{DynamicResource FlyoutBackgroundBrush}" />
         <Setter Property="Template"
                 Value="{StaticResource FlyoutTemplate}" />
         <Setter Property="FocusVisualStyle"

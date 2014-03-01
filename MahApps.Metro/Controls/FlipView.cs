@@ -92,13 +92,14 @@ namespace MahApps.Metro.Controls
                 forwardButton.Visibility = Visibility.Hidden;
             }
         }
+
         void FlipView_Loaded(object sender, RoutedEventArgs e)
         {
             /* Loaded event fires twice if its a child of a TabControl.
              * Once because the TabControl seems to initiali(z|s)e everything.
              * And a second time when the Tab (housing the FlipView) is switched to. */
 
-            if (backButton == null) //OnApplyTemplate hasn't been called yet.
+            if (backButton == null || forwardButton == null) //OnApplyTemplate hasn't been called yet.
                 ApplyTemplate();
 
             if (loaded) return; //Counteracts the double 'Loaded' event issue.
@@ -108,12 +109,6 @@ namespace MahApps.Metro.Controls
 
             this.SelectionChanged += FlipView_SelectionChanged;
             this.PreviewKeyDown += FlipView_PreviewKeyDown;
-
-            ShowBannerStoryboard = ((Storyboard)this.Template.Resources["ShowBannerStoryboard"]).Clone();
-            HideBannerStoryboard = ((Storyboard)this.Template.Resources["HideBannerStoryboard"]).Clone();
-
-            ShowControlStoryboard = ((Storyboard)this.Template.Resources["ShowControlStoryboard"]).Clone();
-            HideControlStoryboard = ((Storyboard)this.Template.Resources["HideControlStoryboard"]).Clone();
 
             SelectedIndex = 0;
 
@@ -159,6 +154,12 @@ namespace MahApps.Metro.Controls
         public override void OnApplyTemplate()
         {
             base.OnApplyTemplate();
+
+            ShowBannerStoryboard = ((Storyboard)this.Template.Resources["ShowBannerStoryboard"]).Clone();
+            HideBannerStoryboard = ((Storyboard)this.Template.Resources["HideBannerStoryboard"]).Clone();
+
+            ShowControlStoryboard = ((Storyboard)this.Template.Resources["ShowControlStoryboard"]).Clone();
+            HideControlStoryboard = ((Storyboard)this.Template.Resources["HideControlStoryboard"]).Clone();
 
             presenter = GetTemplateChild(PART_Presenter) as TransitioningContentControl;
             backButton = GetTemplateChild(PART_BackButton) as Button;
@@ -251,7 +252,7 @@ namespace MahApps.Metro.Controls
 
         private void HideBanner()
         {
-            if (this.Height > 0.0)
+            if (this.ActualHeight > 0.0)
             {
                 bannerLabel.BeginStoryboard(HideControlStoryboard);
                 bannerGrid.BeginStoryboard(HideBannerStoryboard);

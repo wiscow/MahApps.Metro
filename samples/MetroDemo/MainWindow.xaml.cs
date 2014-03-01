@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Media;
 using System.Windows.Threading;
 using MahApps.Metro;
@@ -9,6 +11,7 @@ using MahApps.Metro.Controls;
 using MahApps.Metro.Controls.Dialogs;
 using System.Collections.Generic;
 using System.Windows.Data;
+using MetroDemo.ExampleWindows;
 
 namespace MetroDemo
 {
@@ -18,16 +21,6 @@ namespace MetroDemo
         {
             DataContext = new MainWindowViewModel();
             InitializeComponent();
-            var t = new DispatcherTimer(TimeSpan.FromSeconds(2), DispatcherPriority.Normal, Tick, this.Dispatcher);
-
-            CollectionViewSource.GetDefaultView(groupingComboBox.ItemsSource).GroupDescriptions.Add(new PropertyGroupDescription("Artist"));
-        }
-
-        void Tick(object sender, EventArgs e)
-        {
-            var dateTime = DateTime.Now;
-            transitioning.Content = new TextBlock { Text = "Transitioning Content! " + dateTime, SnapsToDevicePixels = true };
-            customTransitioning.Content = new TextBlock { Text = "Custom transistion! " + dateTime, SnapsToDevicePixels = true };
         }
 
         private void ThemeLight(object sender, RoutedEventArgs e)
@@ -47,14 +40,18 @@ namespace MetroDemo
             new VSDemo().Show();
         }
 
+        private Window flyoutDemo;
         private void LaunchFlyoutDemo(object sender, RoutedEventArgs e)
         {
-            new FlyoutDemo().Show();
-        }
-
-        private void LaunchPanoramaDemo(object sender, RoutedEventArgs e)
-        {
-            new PanoramaDemo().Show();
+            if (flyoutDemo == null)
+            {
+                flyoutDemo = new FlyoutDemo();
+                flyoutDemo.Closed += (o, args) => flyoutDemo = null;
+            }
+            if (flyoutDemo.IsVisible)
+                flyoutDemo.Hide();
+            else
+                flyoutDemo.Show();
         }
 
         private void LaunchIcons(object sender, RoutedEventArgs e)
@@ -62,9 +59,18 @@ namespace MetroDemo
             new IconsWindow().Show();
         }
 
+        private Window cleanWindowDemo;
         private void LauchCleanDemo(object sender, RoutedEventArgs e)
         {
-            new CleanWindowDemo().Show();
+            if (cleanWindowDemo == null)
+            {
+                cleanWindowDemo = new CleanWindowDemo();
+                cleanWindowDemo.Closed += (o, args) => cleanWindowDemo = null;
+            }
+            if (cleanWindowDemo.IsVisible)
+                cleanWindowDemo.Hide();
+            else
+                cleanWindowDemo.Show();
         }
 
         private void LaunchRibbonDemo(object sender, RoutedEventArgs e)
@@ -76,108 +82,115 @@ namespace MetroDemo
 #endif
         }
 
-        private void ShowMessageDialog(object sender, RoutedEventArgs e)
+        private async void ShowDialogOutside(object sender, RoutedEventArgs e)
         {
-            this.ShowMessageAsync("Hello!", "Welcome to the world of metro!", MahApps.Metro.Controls.Dialogs.MessageDialogStyle.AffirmativeAndNegative).ContinueWith(x =>
-                {
-                    Dispatcher.BeginInvoke(new Action(() =>
-                        {
-                            this.ShowMessageAsync("Result", "You said: " + (x.Result == MahApps.Metro.Controls.Dialogs.MessageDialogResult.Affirmative ? "OK" : "Cancel"));
-                        }));
-                });
+            var dialog = (BaseMetroDialog)this.Resources["SimpleDialogTest"];
+            dialog = dialog.ShowDialogExternally();
+
+            await TaskEx.Delay(5000);
+
+            await dialog.RequestCloseAsync();
         }
 
-        private void ShowSimpleDialog(object sender, RoutedEventArgs e)
+        private async void ShowMessageDialog(object sender, RoutedEventArgs e)
         {
-            var dialog = this.Resources["SimpleDialogTest"] as BaseMetroDialog;
+            // This demo runs on .Net 4.0, but we're using the Microsoft.Bcl.Async package so we have async/await support
+            // The package is only used by the demo and not a dependency of the library!
+            this.MetroDialogOptions.ColorScheme = UseAccentForDialogsMenuItem.IsChecked ? MetroDialogColorScheme.Accented : MetroDialogColorScheme.Theme;
 
-            this.ShowMetroDialogAsync("This dialog allows arbitrary content. It will close in 5 seconds.", dialog).ContinueWith(x => System.Threading.Thread.Sleep(5000)).ContinueWith(y =>
-                {
-                    Dispatcher.Invoke(new Action(() =>
-                        {
-                            this.HideMetroDialogAsync(dialog);
-                        }));
-                });
-        }
-        private void ShowProgressDialog(object sender, RoutedEventArgs e)
-        {
-            var remoteTask = this.ShowProgressAsync("Please wait...", "We are cooking up some cupcakes!");
-
-
-            //Ugly demo code that doesn't use 'await'. This would be much cleaner WITH await.
-            ProgressDialogController remote = null;
-
-            System.Threading.Tasks.Task.Factory.StartNew(() => System.Threading.Thread.Sleep(5000)).ContinueWith(x => Dispatcher.Invoke(new Action(() =>
-                {
-                    remote = remoteTask.Result;
-                }))).ContinueWith(x =>
-                    {
-                        remote.SetCancelable(true);
-
-                        double i = 0.0;
-                        while (i < 6.0)
-                        {
-                            Dispatcher.Invoke(new Action(() =>
-                                {
-                                    double val = (i / 100.0) * 20.0;
-                                    remote.SetProgress(val);
-                                    remote.SetMessage("Baking cupcake: " + i.ToString() + "...");
-                                }));
-
-                            if (remote.IsCanceled)
-                                break; //canceled progressdialog auto closes.
-
-                            i += 1.0;
-                            System.Threading.Thread.Sleep(2000);
-                        }
-
-                        Dispatcher.Invoke(new Action(() =>
-                        {
-                            remote.CloseAsync().ContinueWith(y =>
-                                {
-                                    Dispatcher.Invoke(new Action(() =>
-                                    {
-                                        if (remote.IsCanceled)
-                                        {
-                                            this.ShowMessageAsync("No cupcakes!", "You stopped baking!");
-                                        }
-                                        else
-                                        {
-                                            this.ShowMessageAsync("Cupcakes!", "Your cupcakes are finished! Enjoy!");
-                                        }
-                                    }));
-                                });
-                        }));
-                    });
-        }
-
-        private void FlipView_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            var flipview = ((FlipView)sender);
-            switch (flipview.SelectedIndex)
+            var mySettings = new MetroDialogSettings()
             {
-                case 0:
-                    flipview.BannerText = "Cupcakes!";
-                    break;
-                case 1:
-                    flipview.BannerText = "Xbox!";
-                    break;
-                case 2:
-                    flipview.BannerText = "Chess!";
-                    break;
+                AffirmativeButtonText = "Hi",
+                NegativeButtonText = "Go away!",
+                FirstAuxiliaryButtonText = "Cancel"
+            };
+
+            MessageDialogResult result = await this.ShowMessageAsync("Hello!", "Welcome to the world of metro! ",
+                MessageDialogStyle.AffirmativeAndNegativeAndSingleAuxiliary, mySettings);
+
+            if (result != MessageDialogResult.FirstAuxiliary)
+                await this.ShowMessageAsync("Result", "You said: " + (result == MessageDialogResult.Affirmative ? mySettings.AffirmativeButtonText : mySettings.NegativeButtonText +
+                    Environment.NewLine + Environment.NewLine + "This dialog will follow the Use Accent setting."));
+        }
+
+        private async void ShowSimpleDialog(object sender, RoutedEventArgs e)
+        {
+            this.MetroDialogOptions.ColorScheme = UseAccentForDialogsMenuItem.IsChecked ? MetroDialogColorScheme.Accented : MetroDialogColorScheme.Theme;
+
+            var dialog = (BaseMetroDialog)this.Resources["SimpleDialogTest"];
+
+            await this.ShowMetroDialogAsync(dialog);
+
+            await TaskEx.Delay(5000);
+
+            await this.HideMetroDialogAsync(dialog);
+        }
+        private async void ShowProgressDialog(object sender, RoutedEventArgs e)
+        {
+            this.MetroDialogOptions.ColorScheme = UseAccentForDialogsMenuItem.IsChecked ? MetroDialogColorScheme.Accented : MetroDialogColorScheme.Theme;
+
+            var controller = await this.ShowProgressAsync("Please wait...", "We are cooking up some cupcakes!");
+
+            await TaskEx.Delay(5000);
+
+            controller.SetCancelable(true);
+
+            double i = 0.0;
+            while (i < 6.0)
+            {
+                double val = (i / 100.0) * 20.0;
+                controller.SetProgress(val);
+                controller.SetMessage("Baking cupcake: " + i + "...");
+
+                if (controller.IsCanceled)
+                    break; //canceled progressdialog auto closes.
+
+                i += 1.0;
+
+                await TaskEx.Delay(2000);
+            }
+
+            await controller.CloseAsync();
+
+            if (controller.IsCanceled)
+            {
+                await this.ShowMessageAsync("No cupcakes!", "You stopped baking!");
+            }
+            else
+            {
+                await this.ShowMessageAsync("Cupcakes!", "Your cupcakes are finished! Enjoy!");
             }
         }
 
-        private void MetroTabControl_TabItemClosingEvent(object sender, BaseMetroTabControl.TabItemClosingEventArgs e)
+        private async void ShowInputDialog(object sender, RoutedEventArgs e)
         {
-            if (e.ClosingTabItem.Header.ToString().StartsWith("sizes"))
-                e.Cancel = true;
+            this.MetroDialogOptions.ColorScheme = UseAccentForDialogsMenuItem.IsChecked ? MetroDialogColorScheme.Accented : MetroDialogColorScheme.Theme;
+
+            var result = await this.ShowInputAsync("Hello!", "What is your name?");
+
+            if (result == null) //user pressed cancel
+                return;
+
+            await this.ShowMessageAsync("Hello", "Hello " + result + "!");
         }
 
         private void InteropDemo(object sender, RoutedEventArgs e)
         {
             new InteropDemo().Show();
 
+        }
+
+        private void LaunchNavigationDemo(object sender, RoutedEventArgs e)
+        {
+            var navWin = new MetroNavigationWindow();
+            navWin.Title = "Navigation Demo";
+
+            //uncomment the next two lines if you want the clean style.
+            //navWin.Resources.MergedDictionaries.Add(new ResourceDictionary() { Source = new Uri("pack://application:,,,/MahApps.Metro;component/Styles/Clean/CleanWindow.xaml", UriKind.Absolute) });
+            //navWin.SetResourceReference(StyleProperty, "CleanWindowStyleKey");
+
+            navWin.Show();
+            navWin.Navigate(new Navigation.HomePage());
         }
     }
 }

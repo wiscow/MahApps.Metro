@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 
 namespace MahApps.Metro.Controls
 {
@@ -16,6 +17,27 @@ namespace MahApps.Metro.Controls
     [StyleTypedProperty(Property = "ItemContainerStyle", StyleTargetType = typeof(Flyout))]
     public class FlyoutsControl : ItemsControl
     {
+        public static readonly DependencyProperty OverrideExternalCloseButtonProperty = DependencyProperty.Register("OverrideExternalCloseButton", typeof(MouseButton?), typeof(FlyoutsControl), new PropertyMetadata(null));
+        public static readonly DependencyProperty OverrideIsPinnedProperty = DependencyProperty.Register("OverrideIsPinned", typeof(bool), typeof(FlyoutsControl), new PropertyMetadata(false));
+        
+        /// <summary>
+        /// Gets/sets whether <see cref="MahApps.Metro.Controls.Flyout.ExternalCloseButton"/> is ignored and all flyouts behave as if it was set to the value of this property.
+        /// </summary>
+        public MouseButton? OverrideExternalCloseButton
+        {
+            get { return (MouseButton?) GetValue(OverrideExternalCloseButtonProperty); }
+            set { SetValue(OverrideExternalCloseButtonProperty, value); }
+        }
+        
+        /// <summary>
+        /// Gets/sets whether <see cref="MahApps.Metro.Controls.Flyout.IsPinned"/> is ignored and all flyouts behave as if it was set false.
+        /// </summary>
+        public bool OverrideIsPinned
+        {
+            get { return (bool) GetValue(OverrideIsPinnedProperty); }
+            set { SetValue(OverrideIsPinnedProperty, value); }
+        }
+        
         static FlyoutsControl()
         {
             DefaultStyleKeyProperty.OverrideMetadata(
@@ -49,7 +71,9 @@ namespace MahApps.Metro.Controls
                     this.DetachHandlers(this.GetFlyouts(e.OldItems));
                     break;
                 case NotifyCollectionChangedAction.Reset:
-                    this.AttachHandlers(this.GetFlyouts(this.Items));
+                    List<Flyout> flyouts = this.GetFlyouts(this.Items).ToList();
+                    this.DetachHandlers(flyouts);
+                    this.AttachHandlers(flyouts);
                     break;
             }
         }
@@ -65,7 +89,9 @@ namespace MahApps.Metro.Controls
         private void AttachHandlers(Flyout item)
         {
             var isOpenChanged = DependencyPropertyDescriptor.FromProperty(Flyout.IsOpenProperty, typeof(Flyout));
-            isOpenChanged.AddValueChanged(item, this.FlyoutIsOpenChanged);
+            var themeChanged = DependencyPropertyDescriptor.FromProperty(Flyout.ThemeProperty, typeof(Flyout));
+            isOpenChanged.AddValueChanged(item, this.FlyoutStatusChanged);
+            themeChanged.AddValueChanged(item, this.FlyoutStatusChanged);
         }
 
         private void DetachHandlers(IEnumerable<Flyout> items)
@@ -79,10 +105,12 @@ namespace MahApps.Metro.Controls
         private void DetachHandlers(Flyout item)
         {
             var isOpenChanged = DependencyPropertyDescriptor.FromProperty(Flyout.IsOpenProperty, typeof(Flyout));
-            isOpenChanged.RemoveValueChanged(item, this.FlyoutIsOpenChanged);
+            var themeChanged = DependencyPropertyDescriptor.FromProperty(Flyout.ThemeProperty, typeof(Flyout));
+            isOpenChanged.RemoveValueChanged(item, this.FlyoutStatusChanged);
+            themeChanged.RemoveValueChanged(item, this.FlyoutStatusChanged);
         }
 
-        private void FlyoutIsOpenChanged(object sender, EventArgs e)
+        private void FlyoutStatusChanged(object sender, EventArgs e)
         {
             Flyout flyout = this.GetFlyout(sender); //Get the flyout that raised the handler.
 
@@ -91,7 +119,7 @@ namespace MahApps.Metro.Controls
             var parentWindow = this.TryFindParent<MetroWindow>();
             if (parentWindow != null)
             {
-                var visibleFlyouts = this.GetFlyouts(this.Items).Where(i => i.IsOpen).OrderBy(Panel.GetZIndex).Count();
+                var visibleFlyouts = this.GetFlyouts(this.Items).Where(i => i.IsOpen).OrderBy(Panel.GetZIndex);
                 parentWindow.HandleFlyoutStatusChange(flyout, visibleFlyouts);
             }
         }
@@ -105,6 +133,11 @@ namespace MahApps.Metro.Controls
             }
 
             return (Flyout)this.ItemContainerGenerator.ContainerFromItem(item);
+        }
+
+        internal IEnumerable<Flyout> GetFlyouts()
+        {
+            return GetFlyouts(this.Items);
         }
 
         private IEnumerable<Flyout> GetFlyouts(IEnumerable items)

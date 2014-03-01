@@ -25,8 +25,7 @@
                 <Button x:Name="PART_NegativeButton"
                         Height="35"
                         MinWidth="80"
-                        Background="{DynamicResource AccentColorBrush}"
-                        Foreground="White"
+                        Style="{DynamicResource AccentedDialogSquareButton}"
                         Content="{Binding NegativeButtonText, RelativeSource={RelativeSource AncestorType=Dialogs:ProgressDialog, Mode=FindAncestor}, UpdateSourceTrigger=PropertyChanged}"
                         Margin="5 0 0 0"
                         Visibility="Hidden" />
@@ -44,7 +43,7 @@
                 IsIndeterminate="True"
                 Minimum="0.0"
                 Maximum="1.0"
-                Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Dialogs:ProgressDialog, Mode=FindAncestor}, UpdateSourceTrigger=PropertyChanged}"
+                Foreground="{Binding ProgressBarForeground, RelativeSource={RelativeSource AncestorType=Dialogs:ProgressDialog, Mode=FindAncestor}, UpdateSourceTrigger=PropertyChanged}"
                 x:Name="PART_ProgressBar" />
     </Dialogs:BaseMetroDialog.DialogBottom>
 </Dialogs:BaseMetroDialog>

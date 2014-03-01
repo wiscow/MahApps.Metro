@@ -9,15 +9,40 @@ using System.Windows;
 
 namespace MahApps.Metro
 {
+    using System.Threading.Tasks;
+
     /// <summary>
     /// A class that allows for the detection and alteration of a MetroWindow's theme and accent.
     /// </summary>
     public static class ThemeManager
     {
-        private static readonly ResourceDictionary LightResource = new ResourceDictionary { Source = new Uri("pack://application:,,,/MahApps.Metro;component/Styles/Accents/BaseLight.xaml") };
-        private static readonly ResourceDictionary DarkResource = new ResourceDictionary { Source = new Uri("pack://application:,,,/MahApps.Metro;component/Styles/Accents/BaseDark.xaml") };
+        internal static readonly ResourceDictionary LightResource = new ResourceDictionary { Source = new Uri("pack://application:,,,/MahApps.Metro;component/Styles/Accents/BaseLight.xaml") };
+        internal static readonly ResourceDictionary DarkResource = new ResourceDictionary { Source = new Uri("pack://application:,,,/MahApps.Metro;component/Styles/Accents/BaseDark.xaml") };
 
         private static IList<Accent> _accents;
+
+        /// <summary>
+        /// Cached method info's for use in OnThemeChanged
+        /// </summary>
+        private static readonly MethodInfo SystemColors_InvalidateColors;
+        private static readonly MethodInfo SystemResources_OnThemeChanged;
+        private static readonly MethodInfo SystemResources_InvalidateResources;
+
+        static ThemeManager()
+        {
+            SystemColors_InvalidateColors = typeof(SystemColors).GetMethod("InvalidateCache", BindingFlags.Static | BindingFlags.NonPublic);
+            var assembly = Assembly.GetAssembly(typeof(Window));
+            if (assembly != null)
+            {
+                var systemResources = assembly.GetType("System.Windows.SystemResources");
+                if (systemResources != null)
+                {
+                    SystemResources_OnThemeChanged = systemResources.GetMethod("OnThemeChanged", BindingFlags.Static | BindingFlags.NonPublic);
+                    SystemResources_InvalidateResources = systemResources.GetMethod("InvalidateResources", BindingFlags.Static | BindingFlags.NonPublic);
+                }
+            }
+        }
+
         /// <summary>
         /// Gets a list of all of default themes.
         /// </summary>
@@ -25,32 +50,20 @@ namespace MahApps.Metro
         {
             get
             {
-                return _accents ?? (_accents =
-                    new List<Accent>{
-                        new Accent("Red", new Uri("pack://application:,,,/MahApps.Metro;component/Styles/Accents/Red.xaml")),
-                        new Accent("Green", new Uri("pack://application:,,,/MahApps.Metro;component/Styles/Accents/Green.xaml")),
-                        new Accent("Blue", new Uri("pack://application:,,,/MahApps.Metro;component/Styles/Accents/Blue.xaml")),
-                        new Accent("Purple", new Uri("pack://application:,,,/MahApps.Metro;component/Styles/Accents/Purple.xaml")),
-                        new Accent("Orange", new Uri("pack://application:,,,/MahApps.Metro;component/Styles/Accents/Orange.xaml")),
+                if (_accents != null)
+                    return _accents;
 
-                        new Accent("Lime", new Uri("pack://application:,,,/MahApps.Metro;component/Styles/Accents/Lime.xaml")),
-                        new Accent("Emerald", new Uri("pack://application:,,,/MahApps.Metro;component/Styles/Accents/Emerald.xaml")),
-                        new Accent("Teal", new Uri("pack://application:,,,/MahApps.Metro;component/Styles/Accents/Teal.xaml")),
-                        new Accent("Cyan", new Uri("pack://application:,,,/MahApps.Metro;component/Styles/Accents/Cyan.xaml")),
-                        new Accent("Cobalt", new Uri("pack://application:,,,/MahApps.Metro;component/Styles/Accents/Cobalt.xaml")),
-                        new Accent("Indigo", new Uri("pack://application:,,,/MahApps.Metro;component/Styles/Accents/Indigo.xaml")),
-                        new Accent("Violet", new Uri("pack://application:,,,/MahApps.Metro;component/Styles/Accents/Violet.xaml")),
-                        new Accent("Pink", new Uri("pack://application:,,,/MahApps.Metro;component/Styles/Accents/Pink.xaml")),
-                        new Accent("Magenta", new Uri("pack://application:,,,/MahApps.Metro;component/Styles/Accents/Magenta.xaml")),
-                        new Accent("Crimson", new Uri("pack://application:,,,/MahApps.Metro;component/Styles/Accents/Crimson.xaml")),
-                        new Accent("Amber", new Uri("pack://application:,,,/MahApps.Metro;component/Styles/Accents/Amber.xaml")),
-                        new Accent("Yellow", new Uri("pack://application:,,,/MahApps.Metro;component/Styles/Accents/Yellow.xaml")),
-                        new Accent("Brown", new Uri("pack://application:,,,/MahApps.Metro;component/Styles/Accents/Brown.xaml")),
-                        new Accent("Olive", new Uri("pack://application:,,,/MahApps.Metro;component/Styles/Accents/Olive.xaml")),
-                        new Accent("Steel", new Uri("pack://application:,,,/MahApps.Metro;component/Styles/Accents/Steel.xaml")),
-                        new Accent("Mauve", new Uri("pack://application:,,,/MahApps.Metro;component/Styles/Accents/Mauve.xaml")),
-                        new Accent("Sienna", new Uri("pack://application:,,,/MahApps.Metro;component/Styles/Accents/Sienna.xaml")),
-                    });
+                var colors = new[]{"Red", "Green", "Blue", "Purple", "Orange", "Lime", "Emerald", "Teal", "Cyan", "Cobalt", 
+                    "Indigo", "Violet", "Pink", "Magenta", "Crimson", "Amber", "Yellow", "Brown", "Olive", "Steel", "Mauve", "Sienna"};
+
+                _accents = new List<Accent>(colors.Length);
+
+                foreach (string color in colors)
+                {
+                    _accents.Add(new Accent(color, new Uri(string.Format("pack://application:,,,/MahApps.Metro;component/Styles/Accents/{0}.xaml", color))));
+                }
+
+                return _accents;
             }
         }
 
@@ -94,7 +107,8 @@ namespace MahApps.Metro
                 if (oldAccent != null && oldAccent.Name != newAccent.Name)
                 {
                     var oldAccentResource = resources.MergedDictionaries.FirstOrDefault(d => d.Source == oldAccent.Resources.Source);
-                    if (oldAccentResource != null) {
+                    if (oldAccentResource != null)
+                    {
                         resources.MergedDictionaries.Add(newAccent.Resources);
                         var ok = resources.MergedDictionaries.Remove(oldAccentResource);
 
@@ -148,12 +162,31 @@ namespace MahApps.Metro
 
         private static void ApplyResourceDictionary(ResourceDictionary newRd, ResourceDictionary oldRd)
         {
+            oldRd.BeginInit();
+
             foreach (DictionaryEntry r in newRd)
             {
                 if (oldRd.Contains(r.Key))
                     oldRd.Remove(r.Key);
 
                 oldRd.Add(r.Key, r.Value);
+            }
+
+            oldRd.EndInit();
+        }
+
+        /// <summary>
+        /// Scans the window resources and returns it's accent and theme.
+        /// </summary>
+        public static Tuple<Theme, Accent> DetectTheme()
+        {
+            try
+            {
+                return DetectTheme(Application.Current.MainWindow);
+            }
+            catch (Exception)
+            {
+                return DetectTheme(Application.Current);
             }
         }
 
@@ -175,7 +208,7 @@ namespace MahApps.Metro
         public static Tuple<Theme, Accent> DetectTheme(Application app)
         {
             if (app == null) throw new ArgumentNullException("app");
-            
+
             return DetectTheme(app.Resources);
         }
 
@@ -192,7 +225,8 @@ namespace MahApps.Metro
             Tuple<Theme, Accent> detectedAccentTheme = null;
 
 
-            if (DetectThemeFromResources(ref currentTheme, ref themeDictionary, resources)) {
+            if (DetectThemeFromResources(ref currentTheme, ref themeDictionary, resources))
+            {
                 if (GetThemeFromResources(currentTheme, resources, ref detectedAccentTheme))
                     return new Tuple<Theme, Accent>(detectedAccentTheme.Item1, detectedAccentTheme.Item2);
             }
@@ -224,7 +258,8 @@ namespace MahApps.Metro
                     return true;
                 }
 
-                if (DetectThemeFromResources(ref detectedTheme, ref themeRd, currentRd)) {
+                if (DetectThemeFromResources(ref detectedTheme, ref themeRd, currentRd))
+                {
                     return true;
                 }
             }
@@ -232,7 +267,7 @@ namespace MahApps.Metro
             enumerator.Dispose();
             return false;
         }
-        
+
         internal static bool GetThemeFromResources(Theme presetTheme, ResourceDictionary dict, ref Tuple<Theme, Accent> detectedAccentTheme)
         {
             Theme currentTheme = presetTheme;
@@ -270,38 +305,42 @@ namespace MahApps.Metro
         {
             SafeRaise.Raise(IsThemeChanged, Application.Current, new OnThemeChangedEventArgs() { Theme = newTheme, Accent = newAccent });
 
-            var invalidateColors = typeof(SystemColors).GetMethod("InvalidateCache", BindingFlags.Static | BindingFlags.NonPublic);
-            if (invalidateColors != null)
-            {
-                invalidateColors.Invoke(null, null);
-            }
-
-            var invalidateParameters = typeof(SystemParameters).GetMethod("InvalidateCache", BindingFlags.Static | BindingFlags.NonPublic, null, Type.EmptyTypes, null);
-            if (invalidateParameters != null)
-            {
-                invalidateParameters.Invoke(null, null);
-            }
-
-            var assembly = Assembly.GetAssembly(typeof(Window));
-            if (assembly != null)
-            {
-                var systemResources = assembly.GetType("System.Windows.SystemResources");
-                if (systemResources != null)
+            Action apply = () =>
                 {
-                    var onThemeChanged = systemResources.GetMethod("OnThemeChanged", BindingFlags.Static | BindingFlags.NonPublic);
-                    if (onThemeChanged != null)
+                    if (SystemColors_InvalidateColors != null)
                     {
-                        onThemeChanged.Invoke(null, null);
+                        SystemColors_InvalidateColors.Invoke(null, null);
                     }
 
-                    var invalidateResources = systemResources.GetMethod("InvalidateResources", BindingFlags.Static | BindingFlags.NonPublic);
-                    if (invalidateResources != null)
+                    // See: https://github.com/MahApps/MahApps.Metro/issues/923
+                    //var invalidateParameters = typeof(SystemParameters).GetMethod("InvalidateCache", BindingFlags.Static | BindingFlags.NonPublic, null, Type.EmptyTypes, null);
+                    //if (invalidateParameters != null)
+                    //{
+                    //    invalidateParameters.Invoke(null, null);
+                    //}
+
+                    if (SystemResources_OnThemeChanged != null)
                     {
-                        invalidateResources.Invoke(null, new object[] { false });
+                        SystemResources_OnThemeChanged.Invoke(null, null);
                     }
-                }
+
+                    if (SystemResources_InvalidateResources != null)
+                    {
+                        SystemResources_InvalidateResources.Invoke(null, new object[] { false });
+                    }
+                };
+
+            if (InvalidateSystemResourcesOnBackgroundThread)
+            {
+                Task.Factory.StartNew(apply);
+            }
+            else
+            {
+                apply();
             }
         }
+
+        public static bool InvalidateSystemResourcesOnBackgroundThread { get; set; }
     }
 
     public class OnThemeChangedEventArgs : EventArgs

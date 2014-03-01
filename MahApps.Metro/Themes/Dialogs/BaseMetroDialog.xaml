@@ -16,40 +16,23 @@
                 <Style TargetType="{x:Type Button}"
                        BasedOn="{StaticResource SquareButtonStyle}">
                     <Setter Property="FocusVisualStyle"
-                            Value="{x:Null}" />
-                    <Setter Property="Template">
-                        <Setter.Value>
-                            <ControlTemplate TargetType="{x:Type Button}">
-                                <Grid>
-                                    <Border x:Name="Border"
-                                            Background="{TemplateBinding Background}"
-                                            BorderBrush="{TemplateBinding BorderBrush}"
-                                            BorderThickness="{TemplateBinding BorderThickness}">
-                                        <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                                          Margin="{TemplateBinding Padding}"
-                                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                                          RecognizesAccessKey="True" />
-                                    </Border>
-                                    <Rectangle x:Name="FocusRectangle"
-                                               Visibility="Collapsed"
-                                               Margin="1"
-                                               Stroke="{DynamicResource BlackBrush}"
-                                               StrokeDashArray="1.5 1.5"
-                                               StrokeThickness="1"
-                                               SnapsToDevicePixels="True" />
-                                </Grid>
-                                <ControlTemplate.Triggers>
-                                    <DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=IsKeyboardFocused}"
-                                                 Value="True">
-                                        <Setter TargetName="FocusRectangle"
-                                                Property="Visibility"
-                                                Value="Visible" />
-                                    </DataTrigger>
-                                </ControlTemplate.Triggers>
-                            </ControlTemplate>
-                        </Setter.Value>
-                    </Setter>
+                            Value="{x:Null}" />                    
                 </Style>
+
+                <Style TargetType="{x:Type Button}"
+                       BasedOn="{StaticResource AccentedSquareButtonStyle}"
+                       x:Key="AccentedDialogSquareButton">
+                    <Setter Property="FocusVisualStyle"
+                            Value="{x:Null}" />
+                </Style>
+
+
+                <Storyboard x:Key="DialogShownStoryboard">
+                    <DoubleAnimation To="1" BeginTime="0:0:0" Duration="0:0:0.2" AccelerationRatio=".9" Storyboard.TargetProperty="Opacity" />
+                </Storyboard>
+                <Storyboard x:Key="DialogCloseStoryboard">
+                    <DoubleAnimation To="0" BeginTime="0:0:0" Duration="0:0:0.2" AccelerationRatio=".9" Storyboard.TargetProperty="Opacity" />
+                </Storyboard>
             </ResourceDictionary>
         </ControlTemplate.Resources>
 
@@ -95,6 +78,13 @@
                 </Grid>
             </Border>
         </Grid>
+        <ControlTemplate.Triggers>
+            <EventTrigger RoutedEvent="Loaded">
+                <EventTrigger.Actions>
+                    <BeginStoryboard Storyboard="{StaticResource DialogShownStoryboard}" />
+                </EventTrigger.Actions>
+            </EventTrigger>
+        </ControlTemplate.Triggers>
     </ControlTemplate>
 
     <Style TargetType="{x:Type Dialogs:BaseMetroDialog}">
@@ -114,5 +104,7 @@
                 Value="Cycle" />
         <Setter Property="KeyboardNavigation.DirectionalNavigation"
                 Value="Cycle" />
+        <Setter Property="Opacity" 
+                Value="0" />
     </Style>
 </ResourceDictionary>
