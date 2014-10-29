@@ -8,6 +8,8 @@ using System.Windows.Input;
 
 namespace MahApps.Metro.Controls
 {
+    using System.Runtime.CompilerServices;
+
     /// <summary>
     /// A standard MetroTabControl (Pivot).
     /// </summary>
@@ -44,12 +46,13 @@ namespace MahApps.Metro.Controls
         void BaseMetroTabControl_Loaded(object sender, RoutedEventArgs e)
         {
             //Ensure each tabitem knows what the owning tab is.
-
             if (ItemsSource == null)
-                foreach (TabItem item in Items)
-                    if (item is MetroTabItem)
-                        ((MetroTabItem)item).OwningTabControl = this;
-
+            {
+                foreach (var item in Items.OfType<MetroTabItem>())
+                {
+                    item.OwningTabControl = this;
+                }
+            }
         }
 
         public Thickness TabStripMargin
@@ -153,7 +156,9 @@ namespace MahApps.Metro.Controls
                 return true;
             }
 
+#pragma warning disable 67
             public event System.EventHandler CanExecuteChanged;
+#pragma warning restore 67
 
             public void Execute(object parameter)
             {

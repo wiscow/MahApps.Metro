@@ -21,6 +21,10 @@
                 Value="6,0,0,0" />
         <Setter Property="BorderThickness"
                 Value="1" />
+        <Setter Property="Controls:ControlsHelper.FocusBorderBrush"
+                Value="{DynamicResource HighlightBrush}" />
+        <Setter Property="Controls:ControlsHelper.MouseOverBorderBrush"
+                Value="{DynamicResource CheckBoxMouseOverBrush}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="CheckBox">
@@ -93,7 +97,8 @@
                             <ColumnDefinition Width="*" x:Name="RightCol" />
                         </Grid.ColumnDefinitions>
                         <Grid x:Name="PART_CHECKBOX">
-                            <Rectangle Fill="{DynamicResource TransparentWhiteBrush}" />
+                            <Rectangle Fill="{DynamicResource TransparentWhiteBrush}"
+                                       Margin="-6, 0"/>
                             <Rectangle x:Name="normal"
                                        Opacity="1"
                                        Stroke="{DynamicResource CheckBoxBrush}"
@@ -102,7 +107,7 @@
                                        Width="18"
                                        Height="18" />
                             <Rectangle x:Name="hover"
-                                       Stroke="{DynamicResource CheckBoxMouseOverBrush}"
+                                       Stroke="{TemplateBinding Controls:ControlsHelper.MouseOverBorderBrush}"
                                        StrokeThickness="1"
                                        Fill="{DynamicResource WhiteBrush}"
                                        Opacity="0"
@@ -117,7 +122,7 @@
                                        Height="18" />
                             <Rectangle x:Name="focused"
                                        Opacity="0"
-                                       Stroke="{DynamicResource HighlightBrush}"
+                                       Stroke="{TemplateBinding Controls:ControlsHelper.FocusBorderBrush}"
                                        StrokeThickness="1"
                                        Fill="{DynamicResource WhiteBrush}"
                                        Width="18"
@@ -159,7 +164,7 @@
                                 </Setter.Value>
                             </Setter>
                         </Trigger>
-                        <Trigger Property="Controls:ControlsHelper.ContentDirection"
+                        <Trigger Property="Controls:ToggleButtonHelper.ContentDirection"
                                  Value="RightToLeft">
                             <Setter Property="Padding"
                                     Value="0,0,6,0" />

@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using System.Windows.Shapes;
 using MahApps.Metro.Native;
 
 namespace MahApps.Metro.Controls
@@ -64,22 +62,16 @@ namespace MahApps.Metro.Controls
         private Button min;
         private Button max;
         private Button close;
-        private IntPtr user32 = IntPtr.Zero;
+        private SafeLibraryHandle user32 = null;
 
         static WindowButtonCommands()
         {
             DefaultStyleKeyProperty.OverrideMetadata(typeof(WindowButtonCommands), new FrameworkPropertyMetadata(typeof(WindowButtonCommands)));
         }
 
-        ~WindowButtonCommands()
-        {
-            if (user32 != IntPtr.Zero)
-                UnsafeNativeMethods.FreeLibrary(user32);
-        }
-
         private string GetCaption(int id)
         {
-            if (user32 == IntPtr.Zero)
+            if (user32 == null)
                 user32 = UnsafeNativeMethods.LoadLibrary(Environment.SystemDirectory + "\\User32.dll");
 
             var sb = new StringBuilder(256);
@@ -96,13 +88,11 @@ namespace MahApps.Metro.Controls
 
             max = Template.FindName("PART_Max", this) as Button;
             if (max != null)
-                max.Click += MaximiseClick;
+                max.Click += MaximizeClick;
 
             min = Template.FindName("PART_Min", this) as Button;
             if (min != null)
-                min.Click += MinimiseClick;
-
-            RefreshMaximiseIconState();
+                min.Click += MinimizeClick;
         }
 
         protected void OnClosingWindow(ClosingWindowEventHandlerArgs args)
@@ -112,51 +102,26 @@ namespace MahApps.Metro.Controls
                 handler(this, args);
         }
 
-        private void MinimiseClick(object sender, RoutedEventArgs e)
+        private void MinimizeClick(object sender, RoutedEventArgs e)
         {
             var parentWindow = GetParentWindow();
             if (parentWindow != null)
-                parentWindow.WindowState = WindowState.Minimized;
+                Microsoft.Windows.Shell.SystemCommands.MinimizeWindow(parentWindow);
         }
 
-        private void MaximiseClick(object sender, RoutedEventArgs e)
+        private void MaximizeClick(object sender, RoutedEventArgs e)
         {
             var parentWindow = GetParentWindow();
             if (parentWindow == null)
                 return;
 
-            parentWindow.WindowState = parentWindow.WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
-            RefreshMaximiseIconState(parentWindow);
-        }
-
-        public void RefreshMaximiseIconState()
-        {
-            RefreshMaximiseIconState(GetParentWindow());
-        }
-
-        private void RefreshMaximiseIconState(Window parentWindow)
-        {
-            if (parentWindow == null)
-                return;
-
-            if (parentWindow.WindowState == WindowState.Normal)
+            if (parentWindow.WindowState == WindowState.Maximized)
             {
-                var maxpath = (Path)max.FindName("MaximisePath");
-                maxpath.Visibility = Visibility.Visible;
-
-                var restorepath = (Path)max.FindName("RestorePath");
-                restorepath.Visibility = Visibility.Collapsed;
-
-                max.ToolTip = Maximize;
+                Microsoft.Windows.Shell.SystemCommands.RestoreWindow(parentWindow);
             }
             else
             {
-                var restorepath = (Path)max.FindName("RestorePath");
-                restorepath.Visibility = Visibility.Visible;
-
-                var maxpath = (Path)max.FindName("MaximisePath");
-                maxpath.Visibility = Visibility.Collapsed;
-                max.ToolTip = Restore;
+                Microsoft.Windows.Shell.SystemCommands.MaximizeWindow(parentWindow);
             }
         }
 

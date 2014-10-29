@@ -16,10 +16,11 @@ namespace MahApps.Metro.Controls
     /// <remarks>
     /// Password watermarking code from: http://prabu-guru.blogspot.com/2010/06/how-to-add-watermark-text-to-textbox.html
     /// </remarks>
-    public class TextboxHelper : DependencyObject
+    public class TextboxHelper
     {
         public static readonly DependencyProperty IsMonitoringProperty = DependencyProperty.RegisterAttached("IsMonitoring", typeof(bool), typeof(TextboxHelper), new UIPropertyMetadata(false, OnIsMonitoringChanged));
         public static readonly DependencyProperty WatermarkProperty = DependencyProperty.RegisterAttached("Watermark", typeof(string), typeof(TextboxHelper), new UIPropertyMetadata(string.Empty));
+        public static readonly DependencyProperty UseFloatingWatermarkProperty = DependencyProperty.RegisterAttached("UseFloatingWatermark", typeof(bool), typeof(TextboxHelper), new FrameworkPropertyMetadata(false, ButtonCommandOrClearTextChanged));
         public static readonly DependencyProperty TextLengthProperty = DependencyProperty.RegisterAttached("TextLength", typeof(int), typeof(TextboxHelper), new UIPropertyMetadata(0));
         public static readonly DependencyProperty ClearTextButtonProperty = DependencyProperty.RegisterAttached("ClearTextButton", typeof(bool), typeof(TextboxHelper), new FrameworkPropertyMetadata(false, ButtonCommandOrClearTextChanged));
         
@@ -31,9 +32,6 @@ namespace MahApps.Metro.Controls
         
         public static readonly DependencyProperty SelectAllOnFocusProperty = DependencyProperty.RegisterAttached("SelectAllOnFocus", typeof(bool), typeof(TextboxHelper), new FrameworkPropertyMetadata(false));
         public static readonly DependencyProperty IsWaitingForDataProperty = DependencyProperty.RegisterAttached("IsWaitingForData", typeof(bool), typeof(TextboxHelper), new UIPropertyMetadata(false));
-
-        public static readonly DependencyProperty FocusBorderBrushProperty = DependencyProperty.RegisterAttached("FocusBorderBrush", typeof(Brush), typeof(TextboxHelper), new FrameworkPropertyMetadata(Brushes.Transparent, FrameworkPropertyMetadataOptions.AffectsRender | FrameworkPropertyMetadataOptions.Inherits));
-        public static readonly DependencyProperty MouseOverBorderBrushProperty = DependencyProperty.RegisterAttached("MouseOverBorderBrush", typeof(Brush), typeof(TextboxHelper), new FrameworkPropertyMetadata(Brushes.Transparent, FrameworkPropertyMetadataOptions.AffectsRender | FrameworkPropertyMetadataOptions.Inherits));
 
         private static readonly DependencyProperty HasTextProperty = DependencyProperty.RegisterAttached("HasText", typeof(bool), typeof(TextboxHelper), new FrameworkPropertyMetadata(false));
 
@@ -141,24 +139,6 @@ namespace MahApps.Metro.Controls
             return defaultMenu;
         }
 
-        /// <summary>
-        /// Gets/sets the brush used to draw the focus border.
-        /// </summary>
-        public Brush FocusBorderBrush
-        {
-            get { return (Brush)GetValue(FocusBorderBrushProperty); }
-            set { SetValue(FocusBorderBrushProperty, value); }
-        }
-
-        /// <summary>
-        /// Gets/sets the brush used to draw the mouse over brush.
-        /// </summary>
-        public Brush MouseOverBorderBrush
-        {
-            get { return (Brush)GetValue(MouseOverBorderBrushProperty); }
-            set { SetValue(MouseOverBorderBrushProperty, value); }
-        }
-
         public static void SetIsWaitingForData(DependencyObject obj, bool value)
         {
             obj.SetValue(IsWaitingForDataProperty, value);
@@ -194,6 +174,16 @@ namespace MahApps.Metro.Controls
             obj.SetValue(WatermarkProperty, value);
         }
 
+        public static bool GetUseFloatingWatermark(DependencyObject obj)
+        {
+            return (bool)obj.GetValue(UseFloatingWatermarkProperty);
+        }
+
+        public static void SetUseFloatingWatermark(DependencyObject obj, bool value)
+        {
+            obj.SetValue(UseFloatingWatermarkProperty, value);
+        }
+
         private static void SetTextLength(DependencyObject obj, int value)
         {
             obj.SetValue(TextLengthProperty, value);
@@ -203,9 +193,14 @@ namespace MahApps.Metro.Controls
         /// <summary>
         /// Gets if the attached TextBox has text.
         /// </summary>
-        public bool HasText
+        public static bool GetHasText(DependencyObject obj)
         {
-            get { return (bool)GetValue(HasTextProperty); }
+            return (bool)obj.GetValue(HasTextProperty);
+        }
+
+        public static void SetHasText(DependencyObject obj, bool value)
+        {
+            obj.SetValue(HasTextProperty, value);
         }
 
         static void OnIsMonitoringChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -218,6 +213,9 @@ namespace MahApps.Metro.Controls
                 {
                     txtBox.TextChanged += TextChanged;
                     txtBox.GotFocus += TextBoxGotFocus;
+
+                    txtBox.Dispatcher.BeginInvoke((Action)(() => 
+                        TextChanged(txtBox, new TextChangedEventArgs(TextBox.TextChangedEvent, UndoAction.None))));
                 }
                 else
                 {
@@ -233,6 +231,10 @@ namespace MahApps.Metro.Controls
                 {
                     passBox.PasswordChanged += PasswordChanged;
                     passBox.GotFocus += PasswordGotFocus;
+
+                    // Also fixes 1343, also triggers the show of the floating watermark if necessary
+                    passBox.Dispatcher.BeginInvoke((Action)(() =>
+                        PasswordChanged(passBox, new RoutedEventArgs(PasswordBox.PasswordChangedEvent, passBox))));
                 }
                 else
                 {
@@ -412,6 +414,7 @@ namespace MahApps.Metro.Controls
                 // only one event, because loaded event fires more than once, if the textbox is hosted in a tab item
                 button.Click -= ButtonClicked;
                 button.Click += ButtonClicked;
+                comboBox.SetValue(HasTextProperty, !string.IsNullOrWhiteSpace(comboBox.Text) || comboBox.SelectedItem != null);
             }
             else
             {
@@ -438,6 +441,7 @@ namespace MahApps.Metro.Controls
                 // only one event, because loaded event fires more than once, if the textbox is hosted in a tab item
                 button.Click -= ButtonClicked;
                 button.Click += ButtonClicked;
+                passbox.SetValue(HasTextProperty, !string.IsNullOrWhiteSpace(passbox.Password));
             }
             else
             {
@@ -464,10 +468,12 @@ namespace MahApps.Metro.Controls
                 // only one event, because loaded event fires more than once, if the textbox is hosted in a tab item
                 button.Click -= ButtonClicked;
                 button.Click += ButtonClicked;
+                textbox.SetValue(HasTextProperty, !string.IsNullOrWhiteSpace(textbox.Text));
             }
             else
             {
                 button.Click -= ButtonClicked;
+                textbox.SetValue(HasTextProperty, !string.IsNullOrWhiteSpace(textbox.Text));
             }
         }
 
@@ -500,6 +506,10 @@ namespace MahApps.Metro.Controls
                 }
                 else if (parent is ComboBox)
                 {
+                    if (((ComboBox)parent).IsEditable)
+                    {
+                        ((ComboBox)parent).Text = string.Empty;
+                    }
                     ((ComboBox)parent).SelectedItem = null;
                 }
             }

@@ -1,6 +1,6 @@
 ﻿namespace MahApps.Metro.Native
 {
-    public static class Constants
+    internal static class Constants
     {
         public const int MONITOR_DEFAULTTONEAREST = 0x00000002;
         public const int WM_NCLBUTTONDOWN = 0x00A1;
@@ -49,6 +49,8 @@
         public const uint SWP_NOCOPYBITS = 0x0100;
         public const uint SWP_NOOWNERZORDER = 0x0200; /* Don’t do owner Z ordering */
         public const uint SWP_NOSENDCHANGING = 0x0400; /* Don’t send WM_WINDOWPOSCHANGING */
+
+        public const int WM_MOVE = 0x0003;
 
         public const uint TOPMOST_FLAGS = SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOMOVE | SWP_NOREDRAW | SWP_NOSENDCHANGING;
     }

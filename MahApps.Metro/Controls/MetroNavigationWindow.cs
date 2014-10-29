@@ -109,7 +109,7 @@ namespace MahApps.Metro.Controls
         [System.Diagnostics.DebuggerNonUserCode]
         void PART_Frame_Navigated(object sender, NavigationEventArgs e)
         {
-            PART_Title.Content = (PART_Frame.Content as Page).Title;
+            PART_Title.Content = ((Page) PART_Frame.Content).Title;
             (this as IUriContext).BaseUri = e.Uri;
 
             PageContent = PART_Frame.Content;
@@ -167,7 +167,7 @@ namespace MahApps.Metro.Controls
         /// <summary>
         /// Gets or sets the base uniform resource identifier (URI) of the current context.
         /// </summary>
-        /// <see cref="System.Windows.Navigation.NavigationWindow.IUriContext.BaseUri"/>
+        /// <see cref="IUriContext.BaseUri"/>
         Uri IUriContext.BaseUri { get; set; }
 
         /// <summary>

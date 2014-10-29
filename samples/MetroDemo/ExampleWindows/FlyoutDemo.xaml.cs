@@ -9,6 +9,7 @@ namespace MetroDemo.ExampleWindows
         {
             this.DataContext = new MainWindowViewModel();
             this.InitializeComponent();
+            settingsFlyout.IsOpenChanged += (sender, args) => firstTB.Focus();
         }
 
         private void ShowFirst(object sender, RoutedEventArgs e)
@@ -55,6 +56,11 @@ namespace MetroDemo.ExampleWindows
         private void ShowModal(object sender, RoutedEventArgs e)
         {
             this.ToggleFlyout(10);
+        }
+
+        private void ShowAppBar(object sender, RoutedEventArgs e)
+        {
+            this.ToggleFlyout(11);
         }
 
         private void CloseMe(object sender, RoutedEventArgs e)
