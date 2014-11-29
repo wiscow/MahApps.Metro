@@ -4,6 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using System.Windows.Threading;
 
 namespace MahApps.Metro.Controls
 {
@@ -28,6 +29,20 @@ namespace MahApps.Metro.Controls
             add { AddHandler(IsOpenChangedEvent, value); }
             remove { RemoveHandler(IsOpenChangedEvent, value); }
         }
+
+        /// <summary>
+        /// An event that is raised when the closing animation has finished.
+        /// </summary>
+        public static readonly RoutedEvent ClosingFinishedEvent =
+            EventManager.RegisterRoutedEvent("ClosingFinished", RoutingStrategy.Bubble,
+                typeof(RoutedEventHandler), typeof(Flyout));
+
+        public event RoutedEventHandler ClosingFinished
+        {
+            add { AddHandler(ClosingFinishedEvent, value); }
+            remove { RemoveHandler(ClosingFinishedEvent, value); }
+        }
+
         public static readonly DependencyProperty HeaderProperty = DependencyProperty.Register("Header", typeof(string), typeof(Flyout), new PropertyMetadata(default(string)));
         public static readonly DependencyProperty PositionProperty = DependencyProperty.Register("Position", typeof(Position), typeof(Flyout), new PropertyMetadata(Position.Left, PositionChanged));
         public static readonly DependencyProperty IsPinnedProperty = DependencyProperty.Register("IsPinned", typeof(bool), typeof(Flyout), new PropertyMetadata(true));
@@ -41,6 +56,9 @@ namespace MahApps.Metro.Controls
         public static readonly DependencyProperty ExternalCloseButtonProperty = DependencyProperty.Register("ExternalCloseButton", typeof(MouseButton), typeof(Flyout), new PropertyMetadata(MouseButton.Left));
         public static readonly DependencyProperty CloseButtonVisibilityProperty = DependencyProperty.Register("CloseButtonVisibility", typeof(Visibility), typeof(Flyout), new FrameworkPropertyMetadata(Visibility.Visible));
         public static readonly DependencyProperty TitleVisibilityProperty = DependencyProperty.Register("TitleVisibility", typeof(Visibility), typeof(Flyout), new FrameworkPropertyMetadata(Visibility.Visible));
+
+        internal PropertyChangeNotifier IsOpenPropertyChangeNotifier { get; set; }
+        internal PropertyChangeNotifier ThemePropertyChangeNotifier { get; set; }
 
         /// <summary>
         /// Gets/sets if the title is visible in this flyout.
@@ -114,13 +132,13 @@ namespace MahApps.Metro.Controls
             get { return (bool)GetValue(IsPinnedProperty); }
             set { SetValue(IsPinnedProperty, value); }
         }
-        
+
         /// <summary>
         /// Gets/sets the mouse button that closes the flyout on an external mouse click.
         /// </summary>
         public MouseButton ExternalCloseButton
         {
-            get { return (MouseButton) GetValue(ExternalCloseButtonProperty); }
+            get { return (MouseButton)GetValue(ExternalCloseButtonProperty); }
             set { SetValue(ExternalCloseButtonProperty, value); }
         }
 
@@ -167,9 +185,11 @@ namespace MahApps.Metro.Controls
 
         private void UpdateFlyoutTheme()
         {
+            var flyoutsControl = this.TryFindParent<FlyoutsControl>();
+
             if (System.ComponentModel.DesignerProperties.GetIsInDesignMode(this))
             {
-                this.Visibility = this.TryFindParent<FlyoutsControl>() != null ? Visibility.Collapsed : Visibility.Visible;
+                this.Visibility = flyoutsControl != null ? Visibility.Collapsed : Visibility.Visible;
             }
 
             var window = this.TryFindParent<MetroWindow>();
@@ -183,6 +203,12 @@ namespace MahApps.Metro.Controls
 
                     this.ChangeFlyoutTheme(accent, windowTheme.Item1);
                 }
+
+                // we must certain to get the right foreground for window commands and buttons
+                if (flyoutsControl != null && this.IsOpen)
+                {
+                    flyoutsControl.HandleFlyoutStatusChange(this, window);
+                }
             }
         }
 
@@ -195,31 +221,29 @@ namespace MahApps.Metro.Controls
                     ThemeManager.ChangeAppStyle(this.Resources, windowAccent, windowTheme);
                     this.SetResourceReference(BackgroundProperty, "HighlightBrush");
                     this.SetResourceReference(ForegroundProperty, "IdealForegroundColorBrush");
-                break;
+                    break;
 
                 case FlyoutTheme.Adapt:
                     ThemeManager.ChangeAppStyle(this.Resources, windowAccent, windowTheme);
                     break;
 
                 case FlyoutTheme.Inverse:
-                        AppTheme inverseTheme = ThemeManager.GetInverseAppTheme(windowTheme);
+                    AppTheme inverseTheme = ThemeManager.GetInverseAppTheme(windowTheme);
 
-                    if(inverseTheme == null)
+                    if (inverseTheme == null)
                         throw new InvalidOperationException("The inverse flyout theme only works if the window theme abides the naming convention. " +
                                                             "See ThemeManager.GetInverseAppTheme for more infos");
 
                     ThemeManager.ChangeAppStyle(this.Resources, windowAccent, inverseTheme);
                     break;
-                
-                case FlyoutTheme.Dark: {
+
+                case FlyoutTheme.Dark:
                     ThemeManager.ChangeAppStyle(this.Resources, windowAccent, ThemeManager.GetAppTheme("BaseDark"));
                     break;
-                }
 
-                case FlyoutTheme.Light: {
+                case FlyoutTheme.Light:
                     ThemeManager.ChangeAppStyle(this.Resources, windowAccent, ThemeManager.GetAppTheme("BaseLight"));
                     break;
-                }
             }
         }
 
@@ -235,7 +259,8 @@ namespace MahApps.Metro.Controls
                 return theme;
 
             // second try, look for main window
-            if (Application.Current != null) {
+            if (Application.Current != null)
+            {
                 var mainWindow = Application.Current.MainWindow as MetroWindow;
                 theme = mainWindow != null ? ThemeManager.DetectAppStyle(mainWindow) : null;
                 if (theme != null && theme.Item2 != null)
@@ -268,42 +293,59 @@ namespace MahApps.Metro.Controls
         {
             var flyout = (Flyout)dependencyObject;
 
-            if (e.NewValue != e.OldValue)
-            {
-                if ((bool)e.NewValue)
+            Action openedChangedAction = () => {
+                if (e.NewValue != e.OldValue)
                 {
-                    if (flyout.hideStoryboard != null)
+                    if ((bool)e.NewValue)
                     {
-                        // don't set visibility to hidden on show :-)
-                        flyout.hideStoryboard.Completed -= flyout.HideStoryboard_Completed;
+                        if (flyout.hideStoryboard != null)
+                        {
+                            // don't let the storyboard end it's completed event
+                            // otherwise it could be hidden on start
+                            flyout.hideStoryboard.Completed -= flyout.HideStoryboard_Completed;
+                        }
+                        flyout.Visibility = Visibility.Visible;
+                        flyout.ApplyAnimation(flyout.Position, flyout.AnimateOpacity);
                     }
-                    flyout.Visibility = Visibility.Visible;
-                    flyout.ApplyAnimation(flyout.Position, flyout.AnimateOpacity);
-                }
-                else
-                {
-                    if (flyout.hideStoryboard != null)
+                    else
                     {
-                        // after finished hide story board set the visibility to hidden
-                        flyout.hideStoryboard.Completed += flyout.HideStoryboard_Completed;
+                        if (flyout.hideStoryboard != null)
+                        {
+                            flyout.hideStoryboard.Completed += flyout.HideStoryboard_Completed;
+                        }
+                        else
+                        {
+                            flyout.Hide();
+                        }
                     }
+
+                    VisualStateManager.GoToState(flyout, (bool)e.NewValue == false ? "Hide" : "Show", true);
                 }
 
-                VisualStateManager.GoToState(flyout, (bool)e.NewValue == false ? "Hide" : "Show", true);
-            }
-            
-            flyout.RaiseEvent(new RoutedEventArgs(IsOpenChangedEvent));
+                flyout.RaiseEvent(new RoutedEventArgs(IsOpenChangedEvent));
+            };
+
+            flyout.Dispatcher.BeginInvoke(DispatcherPriority.Background, openedChangedAction);
         }
 
         private void HideStoryboard_Completed(object sender, EventArgs e)
         {
+            this.hideStoryboard.Completed -= this.HideStoryboard_Completed;
+
+            this.Hide();
+        }
+
+        private void Hide()
+        {
             // hide the flyout, we should get better performance and prevent showing the flyout on any resizing events
             this.Visibility = Visibility.Hidden;
+
+            this.RaiseEvent(new RoutedEventArgs(ClosingFinishedEvent));
         }
 
         private static void ThemeChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs e)
         {
-            var flyout = (Flyout) dependencyObject;
+            var flyout = (Flyout)dependencyObject;
             flyout.UpdateFlyoutTheme();
         }
 
@@ -315,7 +357,7 @@ namespace MahApps.Metro.Controls
 
         private static void PositionChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs e)
         {
-            var flyout = (Flyout) dependencyObject;
+            var flyout = (Flyout)dependencyObject;
             var wasOpen = flyout.IsOpen;
             if (wasOpen && flyout.AnimateOnPositionChange)
             {
@@ -350,7 +392,7 @@ namespace MahApps.Metro.Controls
         public override void OnApplyTemplate()
         {
             base.OnApplyTemplate();
-            
+
             root = (Grid)GetTemplateChild("root");
             if (root == null)
                 return;
@@ -436,7 +478,7 @@ namespace MahApps.Metro.Controls
 
             if (Position == Position.Left || Position == Position.Right)
                 showFrame.Value = 0;
-            if (Position == Position.Top || Position == Position.Bottom) 
+            if (Position == Position.Top || Position == Position.Bottom)
                 showFrameY.Value = 0;
 
             switch (Position)

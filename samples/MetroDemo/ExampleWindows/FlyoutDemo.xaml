@@ -74,7 +74,7 @@
     </Controls:MetroWindow.RightWindowCommands>
 
     <Controls:MetroWindow.Flyouts>
-        <Controls:FlyoutsControl>
+        <Controls:FlyoutsControl x:Name="flyoutsControl">
             <Controls:Flyout x:Name="settingsFlyout"
                              Margin="100 0 0 0"
                              Width="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Controls:MetroWindow}, Path=ActualWidth}"
@@ -96,25 +96,25 @@
                     <ScrollViewer Grid.Row="1"
                                   VerticalScrollBarVisibility="Auto">
                         <StackPanel Orientation="Vertical">
-                            <TextBox x:Name="firstTB" Controls:TextboxHelper.Watermark="TextBox 01" />
+                            <TextBox x:Name="firstTB" Controls:TextBoxHelper.Watermark="TextBox 01" />
                             <TextBox Margin="0,5,0,0"
-                                     Controls:TextboxHelper.Watermark="TextBox 02" />
+                                     Controls:TextBoxHelper.Watermark="TextBox 02" />
                             <TextBox Margin="0,5,0,0"
-                                     Controls:TextboxHelper.Watermark="TextBox 03" />
+                                     Controls:TextBoxHelper.Watermark="TextBox 03" />
                             <TextBox Margin="0,5,0,0"
-                                     Controls:TextboxHelper.Watermark="TextBox 04" />
+                                     Controls:TextBoxHelper.Watermark="TextBox 04" />
                             <TextBox Margin="0,5,0,0"
-                                     Controls:TextboxHelper.Watermark="TextBox 05" />
+                                     Controls:TextBoxHelper.Watermark="TextBox 05" />
                             <TextBox Margin="0,5,0,0"
-                                     Controls:TextboxHelper.Watermark="TextBox 06" />
+                                     Controls:TextBoxHelper.Watermark="TextBox 06" />
                             <TextBox Margin="0,5,0,0"
-                                     Controls:TextboxHelper.Watermark="TextBox 07" />
+                                     Controls:TextBoxHelper.Watermark="TextBox 07" />
                             <TextBox Margin="0,5,0,0"
-                                     Controls:TextboxHelper.Watermark="TextBox 08" />
+                                     Controls:TextBoxHelper.Watermark="TextBox 08" />
                             <TextBox Margin="0,5,0,0"
-                                     Controls:TextboxHelper.Watermark="TextBox 09" />
+                                     Controls:TextBoxHelper.Watermark="TextBox 09" />
                             <TextBox Margin="0,5,0,0"
-                                     Controls:TextboxHelper.Watermark="TextBox 10" />
+                                     Controls:TextBoxHelper.Watermark="TextBox 10" />
                         </StackPanel>
                     </ScrollViewer>
                     <UniformGrid Columns="2"
@@ -302,7 +302,7 @@
                        Text="Some Flyout Tests..." />
             <Button MinWidth="90"
                     Margin="2"
-                    Click="ShowFirst"
+                    Command="{Binding ElementName=flyoutsDemo, Path=OpenFirstFlyoutCommand}"
                     Content="Show 1" />
             <Button MinWidth="90"
                     Margin="2"
@@ -340,6 +340,10 @@
                     Margin="2"
                     Click="ShowAppBar"
                     Content="AppBar" />
+            <Button MinWidth="90"
+                    Margin="2"
+                    Click="ShowDynamicFlyout" 
+                    Content="Dynamic" />
         </StackPanel>
         <AdornerDecorator Margin="10"
                           MinWidth="100"
@@ -353,7 +357,7 @@
                         Click="ShowBottom"
                         Content="Show Bottom" />
                 <TextBox Margin="0, 10, 0, 0"
-                         Controls:TextboxHelper.Watermark="Number greater than 10"
+                         Controls:TextBoxHelper.Watermark="Number greater than 10"
                          Text="{Binding IntegerGreater10Property, ValidatesOnDataErrors=True, UpdateSourceTrigger=PropertyChanged, NotifyOnValidationError=True}" />
             </StackPanel>
         </AdornerDecorator>
