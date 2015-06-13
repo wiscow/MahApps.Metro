@@ -18,23 +18,27 @@ namespace MahApps.Metro.Controls.Dialogs
             : base(parentWindow, settings)
         {
             InitializeComponent();
+
+            PART_MessageScrollViewer.Height = DialogSettings.MaximumBodyHeight;
         }
 
         internal Task<MessageDialogResult> WaitForButtonPressAsync()
         {
-            Dispatcher.BeginInvoke(new Action(() =>
-            {
+            Dispatcher.BeginInvoke(new Action(() => {
                 this.Focus();
 
                 //kind of acts like a selective 'IsDefault' mechanism.
-                if (ButtonStyle == MessageDialogStyle.Affirmative)
+                switch (this.ButtonStyle)
                 {
-                    PART_AffirmativeButton.Focus();
-                }
+                    case MessageDialogStyle.Affirmative:
+                        PART_AffirmativeButton.Focus();
+                        break;
 
-                else if (ButtonStyle == MessageDialogStyle.AffirmativeAndNegative)
-                {
-                    PART_NegativeButton.Focus();
+                    case MessageDialogStyle.AffirmativeAndNegative:
+                    case MessageDialogStyle.AffirmativeAndNegativeAndDoubleAuxiliary:
+                    case MessageDialogStyle.AffirmativeAndNegativeAndSingleAuxiliary:
+                        PART_NegativeButton.Focus();
+                        break;
                 }
             }));
 
@@ -52,8 +56,7 @@ namespace MahApps.Metro.Controls.Dialogs
             RoutedEventHandler secondAuxHandler = null;
             KeyEventHandler secondAuxKeyHandler = null;
 
-            Action cleanUpHandlers = () =>
-            {
+            Action cleanUpHandlers = () => {
                 PART_NegativeButton.Click -= negativeHandler;
                 PART_AffirmativeButton.Click -= affirmativeHandler;
                 PART_FirstAuxiliaryButton.Click -= firstAuxHandler;
@@ -65,8 +68,7 @@ namespace MahApps.Metro.Controls.Dialogs
                 PART_SecondAuxiliaryButton.KeyDown -= secondAuxKeyHandler;
             };
 
-            negativeKeyHandler = (sender, e) =>
-            {
+            negativeKeyHandler = (sender, e) => {
                 if (e.Key == Key.Enter)
                 {
                     cleanUpHandlers();
@@ -75,8 +77,7 @@ namespace MahApps.Metro.Controls.Dialogs
                 }
             };
 
-            affirmativeKeyHandler = (sender, e) =>
-            {
+            affirmativeKeyHandler = (sender, e) => {
                 if (e.Key == Key.Enter)
                 {
                     cleanUpHandlers();
@@ -85,8 +86,7 @@ namespace MahApps.Metro.Controls.Dialogs
                 }
             };
 
-            firstAuxKeyHandler = (sender, e) =>
-            {
+            firstAuxKeyHandler = (sender, e) => {
                 if (e.Key == Key.Enter)
                 {
                     cleanUpHandlers();
@@ -95,8 +95,7 @@ namespace MahApps.Metro.Controls.Dialogs
                 }
             };
 
-            secondAuxKeyHandler = (sender, e) =>
-            {
+            secondAuxKeyHandler = (sender, e) => {
                 if (e.Key == Key.Enter)
                 {
                     cleanUpHandlers();
@@ -105,8 +104,7 @@ namespace MahApps.Metro.Controls.Dialogs
                 }
             };
 
-            negativeHandler = (sender, e) =>
-            {
+            negativeHandler = (sender, e) => {
                 cleanUpHandlers();
 
                 tcs.TrySetResult(MessageDialogResult.Negative);
@@ -114,8 +112,7 @@ namespace MahApps.Metro.Controls.Dialogs
                 e.Handled = true;
             };
 
-            affirmativeHandler = (sender, e) =>
-            {
+            affirmativeHandler = (sender, e) => {
                 cleanUpHandlers();
 
                 tcs.TrySetResult(MessageDialogResult.Affirmative);
@@ -123,8 +120,7 @@ namespace MahApps.Metro.Controls.Dialogs
                 e.Handled = true;
             };
 
-            firstAuxHandler = (sender, e) =>
-            {
+            firstAuxHandler = (sender, e) => {
                 cleanUpHandlers();
 
                 tcs.TrySetResult(MessageDialogResult.FirstAuxiliary);
@@ -132,8 +128,7 @@ namespace MahApps.Metro.Controls.Dialogs
                 e.Handled = true;
             };
 
-            secondAuxHandler = (sender, e) =>
-            {
+            secondAuxHandler = (sender, e) => {
                 cleanUpHandlers();
 
                 tcs.TrySetResult(MessageDialogResult.SecondAuxiliary);
@@ -159,8 +154,7 @@ namespace MahApps.Metro.Controls.Dialogs
         public static readonly DependencyProperty NegativeButtonTextProperty = DependencyProperty.Register("NegativeButtonText", typeof(string), typeof(MessageDialog), new PropertyMetadata("Cancel"));
         public static readonly DependencyProperty FirstAuxiliaryButtonTextProperty = DependencyProperty.Register("FirstAuxiliaryButtonText", typeof(string), typeof(MessageDialog), new PropertyMetadata("Cancel"));
         public static readonly DependencyProperty SecondAuxiliaryButtonTextProperty = DependencyProperty.Register("SecondAuxiliaryButtonText", typeof(string), typeof(MessageDialog), new PropertyMetadata("Cancel"));
-        public static readonly DependencyProperty ButtonStyleProperty = DependencyProperty.Register("ButtonStyle", typeof(MessageDialogStyle), typeof(MessageDialog), new PropertyMetadata(MessageDialogStyle.Affirmative, new PropertyChangedCallback((s, e) =>
-        {
+        public static readonly DependencyProperty ButtonStyleProperty = DependencyProperty.Register("ButtonStyle", typeof(MessageDialogStyle), typeof(MessageDialog), new PropertyMetadata(MessageDialogStyle.Affirmative, new PropertyChangedCallback((s, e) => {
             MessageDialog md = (MessageDialog)s;
 
             SetButtonState(md);
@@ -168,37 +162,37 @@ namespace MahApps.Metro.Controls.Dialogs
 
         private static void SetButtonState(MessageDialog md)
         {
-            if (md.PART_AffirmativeButton == null) 
+            if (md.PART_AffirmativeButton == null)
                 return;
 
             switch (md.ButtonStyle)
             {
                 case MessageDialogStyle.Affirmative:
-                {
-                    md.PART_AffirmativeButton.Visibility = Visibility.Visible;
-                    md.PART_NegativeButton.Visibility = Visibility.Collapsed;
-                    md.PART_FirstAuxiliaryButton.Visibility = Visibility.Collapsed;
-                    md.PART_SecondAuxiliaryButton.Visibility = Visibility.Collapsed;
-                }
-                break;
+                    {
+                        md.PART_AffirmativeButton.Visibility = Visibility.Visible;
+                        md.PART_NegativeButton.Visibility = Visibility.Collapsed;
+                        md.PART_FirstAuxiliaryButton.Visibility = Visibility.Collapsed;
+                        md.PART_SecondAuxiliaryButton.Visibility = Visibility.Collapsed;
+                    }
+                    break;
                 case MessageDialogStyle.AffirmativeAndNegativeAndSingleAuxiliary:
                 case MessageDialogStyle.AffirmativeAndNegativeAndDoubleAuxiliary:
                 case MessageDialogStyle.AffirmativeAndNegative:
-                {
-                    md.PART_AffirmativeButton.Visibility = Visibility.Visible;
-                    md.PART_NegativeButton.Visibility = Visibility.Visible;
-
-                    if (md.ButtonStyle == MessageDialogStyle.AffirmativeAndNegativeAndSingleAuxiliary || md.ButtonStyle == MessageDialogStyle.AffirmativeAndNegativeAndDoubleAuxiliary)
                     {
-                        md.PART_FirstAuxiliaryButton.Visibility = Visibility.Visible;
-                    }
+                        md.PART_AffirmativeButton.Visibility = Visibility.Visible;
+                        md.PART_NegativeButton.Visibility = Visibility.Visible;
 
-                    if (md.ButtonStyle == MessageDialogStyle.AffirmativeAndNegativeAndDoubleAuxiliary)
-                    {
-                        md.PART_SecondAuxiliaryButton.Visibility = Visibility.Visible;
+                        if (md.ButtonStyle == MessageDialogStyle.AffirmativeAndNegativeAndSingleAuxiliary || md.ButtonStyle == MessageDialogStyle.AffirmativeAndNegativeAndDoubleAuxiliary)
+                        {
+                            md.PART_FirstAuxiliaryButton.Visibility = Visibility.Visible;
+                        }
+
+                        if (md.ButtonStyle == MessageDialogStyle.AffirmativeAndNegativeAndDoubleAuxiliary)
+                        {
+                            md.PART_SecondAuxiliaryButton.Visibility = Visibility.Visible;
+                        }
                     }
-                }
-                break;
+                    break;
             }
 
             md.AffirmativeButtonText = md.DialogSettings.AffirmativeButtonText;
@@ -209,9 +203,9 @@ namespace MahApps.Metro.Controls.Dialogs
             switch (md.DialogSettings.ColorScheme)
             {
                 case MetroDialogColorScheme.Accented:
-                    md.PART_NegativeButton.Style = md.FindResource("HighlightedSquareButtonStyle") as Style;
-                    md.PART_FirstAuxiliaryButton.Style = md.FindResource("HighlightedSquareButtonStyle") as Style;
-                    md.PART_SecondAuxiliaryButton.Style = md.FindResource("HighlightedSquareButtonStyle") as Style;
+                    md.PART_NegativeButton.Style = md.FindResource("AccentedDialogHighlightedSquareButton") as Style;
+                    md.PART_FirstAuxiliaryButton.Style = md.FindResource("AccentedDialogHighlightedSquareButton") as Style;
+                    md.PART_SecondAuxiliaryButton.Style = md.FindResource("AccentedDialogHighlightedSquareButton") as Style;
                     break;
             }
         }

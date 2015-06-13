@@ -1,8 +1,8 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
 using MahApps.Metro.Native;
 
 namespace MahApps.Metro.Controls
@@ -10,7 +10,7 @@ namespace MahApps.Metro.Controls
     [TemplatePart(Name = "PART_Max", Type = typeof(Button))]
     [TemplatePart(Name = "PART_Close", Type = typeof(Button))]
     [TemplatePart(Name = "PART_Min", Type = typeof(Button))]
-    public class WindowButtonCommands : ContentControl
+    public class WindowButtonCommands : ContentControl, INotifyPropertyChanged
     {
         public event ClosingWindowEventHandler ClosingWindow;
         public delegate void ClosingWindowEventHandler(object sender, ClosingWindowEventHandlerArgs args);
@@ -20,7 +20,9 @@ namespace MahApps.Metro.Controls
             get
             {
                 if (string.IsNullOrEmpty(minimize))
+                {
                     minimize = GetCaption(900);
+                }
                 return minimize;
             }
         }
@@ -30,7 +32,9 @@ namespace MahApps.Metro.Controls
             get
             {
                 if (string.IsNullOrEmpty(maximize))
+                {
                     maximize = GetCaption(901);
+                }
                 return maximize;
             }
         }
@@ -40,7 +44,9 @@ namespace MahApps.Metro.Controls
             get
             {
                 if (string.IsNullOrEmpty(closeText))
+                {
                     closeText = GetCaption(905);
+                }
                 return closeText;
             }
         }
@@ -50,7 +56,9 @@ namespace MahApps.Metro.Controls
             get
             {
                 if (string.IsNullOrEmpty(restore))
+                {
                     restore = GetCaption(903);
+                }
                 return restore;
             }
         }
@@ -72,7 +80,9 @@ namespace MahApps.Metro.Controls
         private string GetCaption(int id)
         {
             if (user32 == null)
+            {
                 user32 = UnsafeNativeMethods.LoadLibrary(Environment.SystemDirectory + "\\User32.dll");
+            }
 
             var sb = new StringBuilder(256);
             UnsafeNativeMethods.LoadString(user32, (uint)id, sb, sb.Capacity);
@@ -82,46 +92,53 @@ namespace MahApps.Metro.Controls
         public override void OnApplyTemplate()
         {
             base.OnApplyTemplate();
-            close = Template.FindName("PART_Close", this) as Button;
-            if (close != null)
-                close.Click += CloseClick;
 
-            max = Template.FindName("PART_Max", this) as Button;
-            if (max != null)
-                max.Click += MaximizeClick;
+            this.ParentWindow = this.TryFindParent<MetroWindow>();
+            if (this.ParentWindow != null)
+            {
+                close = Template.FindName("PART_Close", this) as Button;
+                if (close != null)
+                {
+                    close.Click += CloseClick;
+                }
 
-            min = Template.FindName("PART_Min", this) as Button;
-            if (min != null)
-                min.Click += MinimizeClick;
+                max = Template.FindName("PART_Max", this) as Button;
+                if (max != null)
+                {
+                    max.Click += MaximizeClick;
+                }
+
+                min = Template.FindName("PART_Min", this) as Button;
+                if (min != null)
+                {
+                    min.Click += MinimizeClick;
+                }
+            }
         }
 
         protected void OnClosingWindow(ClosingWindowEventHandlerArgs args)
         {
             var handler = ClosingWindow;
             if (handler != null)
+            {
                 handler(this, args);
+            }
         }
 
         private void MinimizeClick(object sender, RoutedEventArgs e)
         {
-            var parentWindow = GetParentWindow();
-            if (parentWindow != null)
-                Microsoft.Windows.Shell.SystemCommands.MinimizeWindow(parentWindow);
+            Microsoft.Windows.Shell.SystemCommands.MinimizeWindow(this.ParentWindow);
         }
 
         private void MaximizeClick(object sender, RoutedEventArgs e)
         {
-            var parentWindow = GetParentWindow();
-            if (parentWindow == null)
-                return;
-
-            if (parentWindow.WindowState == WindowState.Maximized)
+            if (this.ParentWindow.WindowState == WindowState.Maximized)
             {
-                Microsoft.Windows.Shell.SystemCommands.RestoreWindow(parentWindow);
+                Microsoft.Windows.Shell.SystemCommands.RestoreWindow(this.ParentWindow);
             }
             else
             {
-                Microsoft.Windows.Shell.SystemCommands.MaximizeWindow(parentWindow);
+                Microsoft.Windows.Shell.SystemCommands.MaximizeWindow(this.ParentWindow);
             }
         }
 
@@ -131,26 +148,35 @@ namespace MahApps.Metro.Controls
             OnClosingWindow(closingWindowEventHandlerArgs);
 
             if (closingWindowEventHandlerArgs.Cancelled)
-                return;
-
-            var parentWindow = GetParentWindow();
-            if (parentWindow != null)
             {
-                parentWindow.Close();
+                return;
+            }
+
+            this.ParentWindow.Close();
+        }
+
+        private MetroWindow _parentWindow;
+
+        public MetroWindow ParentWindow
+        {
+            get { return _parentWindow; }
+            set
+            {
+                if (Equals(_parentWindow, value))
+                {
+                    return;
+                }
+                _parentWindow = value;
+                this.RaisePropertyChanged("ParentWindow");
             }
         }
 
-        private Window GetParentWindow()
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected virtual void RaisePropertyChanged(string propertyName = null)
         {
-            var parent = VisualTreeHelper.GetParent(this);
-
-            while (parent != null && !(parent is Window))
-            {
-                parent = VisualTreeHelper.GetParent(parent);
-            }
-
-            var parentWindow = parent as Window;
-            return parentWindow;
+            var handler = PropertyChanged;
+            if (handler != null) handler(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

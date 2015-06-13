@@ -10,6 +10,7 @@ namespace MahApps.Metro.Controls.Dialogs
         private const string DefaultUsernameWatermark = "Username...";
         private const string DefaultPasswordWatermark = "Password...";
         private const Visibility DefaultNegativeButtonVisibility = Visibility.Collapsed;
+        private const bool DefaultEnablePasswordPreview = false;
 
         public LoginDialogSettings()
         {
@@ -17,15 +18,20 @@ namespace MahApps.Metro.Controls.Dialogs
             PasswordWatermark = DefaultPasswordWatermark;
             NegativeButtonVisibility = DefaultNegativeButtonVisibility;
             AffirmativeButtonText = "Login";
+            EnablePasswordPreview = DefaultEnablePasswordPreview;
         }
 
         public string InitialUsername { get; set; }
+
+        public string InitialPassword { get; set; }
 
         public string UsernameWatermark { get; set; }
 
         public string PasswordWatermark { get; set; }
 
         public Visibility NegativeButtonVisibility { get; set; }
+
+        public bool EnablePasswordPreview { get; set; }
     }
 
     public class LoginDialogData
@@ -46,9 +52,18 @@ namespace MahApps.Metro.Controls.Dialogs
         {
             InitializeComponent();
             Username = settings.InitialUsername;
+            Password = settings.InitialPassword;
             UsernameWatermark = settings.UsernameWatermark;
             PasswordWatermark = settings.PasswordWatermark;
             NegativeButtonButtonVisibility = settings.NegativeButtonVisibility;
+            if (settings.EnablePasswordPreview)
+            {
+                object resource = Application.Current.FindResource("Win8MetroPasswordBox");
+                if (resource != null && resource.GetType() == typeof(Style))
+                {
+                    PART_TextBox2.Style = (Style)resource;
+                }
+            }
         }
 
         internal Task<LoginDialogData> WaitForButtonPressAsync()
@@ -158,7 +173,7 @@ namespace MahApps.Metro.Controls.Dialogs
             switch (this.DialogSettings.ColorScheme)
             {
                 case MetroDialogColorScheme.Accented:
-                    this.PART_NegativeButton.Style = this.FindResource("HighlightedSquareButtonStyle") as Style;
+                    this.PART_NegativeButton.Style = this.FindResource("AccentedDialogHighlightedSquareButton") as Style;
                     PART_TextBox.SetResourceReference(ForegroundProperty, "BlackColorBrush");
                     PART_TextBox2.SetResourceReference(ForegroundProperty, "BlackColorBrush");
                     break;

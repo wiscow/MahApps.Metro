@@ -37,7 +37,7 @@ namespace MahApps.Metro.Controls
         private const string PART_MetroDialogContainer = "PART_MetroDialogContainer";
         private const string PART_FlyoutModal = "PART_FlyoutModal";
 
-        public static readonly DependencyProperty ShowIconOnTitleBarProperty = DependencyProperty.Register("ShowIconOnTitleBar", typeof(bool), typeof(MetroWindow), new PropertyMetadata(true));
+        public static readonly DependencyProperty ShowIconOnTitleBarProperty = DependencyProperty.Register("ShowIconOnTitleBar", typeof(bool), typeof(MetroWindow), new PropertyMetadata(true, OnShowIconOnTitleBarPropertyChangedCallback));
         public static readonly DependencyProperty IconEdgeModeProperty = DependencyProperty.Register("IconEdgeMode", typeof(EdgeMode), typeof(MetroWindow), new PropertyMetadata(EdgeMode.Aliased));
         public static readonly DependencyProperty IconBitmapScalingModeProperty = DependencyProperty.Register("IconBitmapScalingMode", typeof(BitmapScalingMode), typeof(MetroWindow), new PropertyMetadata(BitmapScalingMode.HighQuality));
         public static readonly DependencyProperty ShowTitleBarProperty = DependencyProperty.Register("ShowTitleBar", typeof(bool), typeof(MetroWindow), new PropertyMetadata(true, OnShowTitleBarPropertyChangedCallback, OnShowTitleBarCoerceValueCallback));
@@ -45,6 +45,10 @@ namespace MahApps.Metro.Controls
         public static readonly DependencyProperty ShowMinButtonProperty = DependencyProperty.Register("ShowMinButton", typeof(bool), typeof(MetroWindow), new PropertyMetadata(true));
         public static readonly DependencyProperty ShowMaxRestoreButtonProperty = DependencyProperty.Register("ShowMaxRestoreButton", typeof(bool), typeof(MetroWindow), new PropertyMetadata(true));
         public static readonly DependencyProperty ShowCloseButtonProperty = DependencyProperty.Register("ShowCloseButton", typeof(bool), typeof(MetroWindow), new PropertyMetadata(true));
+
+        public static readonly DependencyProperty IsMinButtonEnabledProperty = DependencyProperty.Register("IsMinButtonEnabled", typeof(bool), typeof(MetroWindow), new PropertyMetadata(true));
+        public static readonly DependencyProperty IsMaxRestoreButtonEnabledProperty = DependencyProperty.Register("IsMaxRestoreButtonEnabled", typeof(bool), typeof(MetroWindow), new PropertyMetadata(true));
+        public static readonly DependencyProperty IsCloseButtonEnabledProperty = DependencyProperty.Register("IsCloseButtonEnabled", typeof(bool), typeof(MetroWindow), new PropertyMetadata(true));
 
         public static readonly DependencyProperty ShowSystemMenuOnRightClickProperty = DependencyProperty.Register("ShowSystemMenuOnRightClick", typeof(bool), typeof(MetroWindow), new PropertyMetadata(true));
 
@@ -82,7 +86,9 @@ namespace MahApps.Metro.Controls
         public static readonly DependencyProperty UseNoneWindowStyleProperty = DependencyProperty.Register("UseNoneWindowStyle", typeof(bool), typeof(MetroWindow), new PropertyMetadata(false, OnUseNoneWindowStylePropertyChangedCallback));
         public static readonly DependencyProperty OverrideDefaultWindowCommandsBrushProperty = DependencyProperty.Register("OverrideDefaultWindowCommandsBrush", typeof(SolidColorBrush), typeof(MetroWindow));
 
-        public static readonly DependencyProperty EnableDWMDropShadowProperty = DependencyProperty.Register("EnableDWMDropShadow", typeof(bool), typeof(MetroWindow), new PropertyMetadata(false));
+        [Obsolete(@"This property will be deleted in the next release. You should use BorderThickness=""0"" and a GlowBrush=""Black"" to get a drop shadow around the Window.")]
+        public static readonly DependencyProperty EnableDWMDropShadowProperty = DependencyProperty.Register("EnableDWMDropShadow", typeof(bool), typeof(MetroWindow), new PropertyMetadata(false, OnEnableDWMDropShadowPropertyChangedCallback));
+        public static readonly DependencyProperty IsWindowDraggableProperty = DependencyProperty.Register("IsWindowDraggable", typeof(bool), typeof(MetroWindow), new PropertyMetadata(true));
 
         UIElement icon;
         UIElement titleBar;
@@ -121,10 +127,33 @@ namespace MahApps.Metro.Controls
             set { SetValue(MetroDialogOptionsProperty, value); }
         }
 
+        [Obsolete(@"This property will be deleted in the next release. You should use BorderThickness=""0"" and a GlowBrush=""Black"" to get a drop shadow around the Window.")]
         public bool EnableDWMDropShadow
         {
             get { return (bool)GetValue(EnableDWMDropShadowProperty); }
             set { SetValue(EnableDWMDropShadowProperty, value); }
+        }
+
+        private static void OnEnableDWMDropShadowPropertyChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (e.NewValue != e.OldValue && (bool)e.NewValue)
+            {
+                var window = (MetroWindow)d;
+                window.UseDropShadow();
+            }
+        }
+
+        private void UseDropShadow()
+        {
+            this.BorderThickness = new Thickness(0);
+            this.BorderBrush = null;
+            this.GlowBrush = Brushes.Black;
+        }
+
+        public bool IsWindowDraggable
+        {
+            get { return (bool)GetValue(IsWindowDraggableProperty); }
+            set { SetValue(IsWindowDraggableProperty, value); }
         }
 
         public WindowCommandsOverlayBehavior LeftWindowCommandsOverlayBehavior
@@ -274,12 +303,29 @@ namespace MahApps.Metro.Controls
         }
 
         /// <summary>
+        /// Gets the window placement settings (can be overwritten).
+        /// </summary>
+        public virtual IWindowPlacementSettings GetWindowPlacementSettings()
+        {
+            return this.WindowPlacementSettings ?? new WindowApplicationSettings(this);
+        }
+
+        /// <summary>
         /// Get/sets whether the titlebar icon is visible or not.
         /// </summary>
         public bool ShowIconOnTitleBar
         {
             get { return (bool)GetValue(ShowIconOnTitleBarProperty); }
             set { SetValue(ShowIconOnTitleBarProperty, value); }
+        }
+
+        private static void OnShowIconOnTitleBarPropertyChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var window = (MetroWindow)d;
+            if (e.NewValue != e.OldValue)
+            {
+                window.SetVisibiltyForIcon();
+            }
         }
 
         /// <summary>
@@ -342,10 +388,26 @@ namespace MahApps.Metro.Controls
             if (e.NewValue != e.OldValue)
             {
                 // if UseNoneWindowStyle = true no title bar should be shown
-                if ((bool)e.NewValue)
-                {
-                    ((MetroWindow)d).ShowTitleBar = false;
-                }
+                var useNoneWindowStyle = (bool)e.NewValue;
+                var window = (MetroWindow)d;
+                window.ToggleNoneWindowStyle(useNoneWindowStyle);
+            }
+        }
+
+        private void ToggleNoneWindowStyle(bool useNoneWindowStyle)
+        {
+            // UseNoneWindowStyle means no title bar, window commands or min, max, close buttons
+            if (useNoneWindowStyle)
+            {
+                ShowTitleBar = false;
+            }
+            if (LeftWindowCommandsPresenter != null)
+            {
+                LeftWindowCommandsPresenter.Visibility = useNoneWindowStyle ? Visibility.Collapsed : Visibility.Visible;
+            }
+            if (RightWindowCommandsPresenter != null)
+            {
+                RightWindowCommandsPresenter.Visibility = useNoneWindowStyle ? Visibility.Collapsed : Visibility.Visible;
             }
         }
 
@@ -377,6 +439,33 @@ namespace MahApps.Metro.Controls
         }
 
         /// <summary>
+        /// Gets/sets if the min button is enabled.
+        /// </summary>
+        public bool IsMinButtonEnabled
+        {
+            get { return (bool)GetValue(IsMinButtonEnabledProperty); }
+            set { SetValue(IsMinButtonEnabledProperty, value); }
+        }
+        
+        /// <summary>
+        /// Gets/sets if the max/restore button is enabled.
+        /// </summary>
+        public bool IsMaxRestoreButtonEnabled
+        {
+            get { return (bool)GetValue(IsMaxRestoreButtonEnabledProperty); }
+            set { SetValue(IsMaxRestoreButtonEnabledProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets/sets if the close button is enabled.
+        /// </summary>
+        public bool IsCloseButtonEnabled
+        {
+            get { return (bool)GetValue(IsCloseButtonEnabledProperty); }
+            set { SetValue(IsCloseButtonEnabledProperty, value); }
+        }
+
+        /// <summary>
         /// Gets/sets if the the system menu should popup on right click.
         /// </summary>
         public bool ShowSystemMenuOnRightClick
@@ -403,15 +492,21 @@ namespace MahApps.Metro.Controls
             }
         }
 
-        private void SetVisibiltyForAllTitleElements(bool visible)
+        private void SetVisibiltyForIcon()
         {
-            var newVisibility = visible && this.ShowTitleBar ? Visibility.Visible : Visibility.Collapsed;
             if (this.icon != null)
             {
-                var iconVisibility = this.IconOverlayBehavior.HasFlag(WindowCommandsOverlayBehavior.HiddenTitleBar) && !this.ShowTitleBar 
-                    || this.ShowIconOnTitleBar && this.ShowTitleBar ? Visibility.Visible : Visibility.Collapsed;
+                var isVisible = (this.IconOverlayBehavior.HasFlag(WindowCommandsOverlayBehavior.HiddenTitleBar) && !this.ShowTitleBar)
+                                || (this.ShowIconOnTitleBar && this.ShowTitleBar);
+                var iconVisibility = isVisible ? Visibility.Visible : Visibility.Collapsed;
                 this.icon.Visibility = iconVisibility;
             }
+        }
+        
+        private void SetVisibiltyForAllTitleElements(bool visible)
+        {
+            this.SetVisibiltyForIcon();
+            var newVisibility = visible && this.ShowTitleBar ? Visibility.Visible : Visibility.Collapsed;
             if (this.titleBar != null)
             {
                 this.titleBar.Visibility = newVisibility;
@@ -507,6 +602,8 @@ namespace MahApps.Metro.Controls
         /// <returns>A task representing the process.</returns>
         public System.Threading.Tasks.Task ShowOverlayAsync()
         {
+            if (overlayBox == null) throw new InvalidOperationException("OverlayBox can not be founded in this MetroWindow's template. Are you calling this before the window has loaded?");
+
             if (IsOverlayVisible() && overlayStoryboard == null)
                 return new System.Threading.Tasks.Task(() => { }); //No Task.FromResult in .NET 4.
 
@@ -547,6 +644,8 @@ namespace MahApps.Metro.Controls
         /// <returns>A task representing the process.</returns>
         public System.Threading.Tasks.Task HideOverlayAsync()
         {
+            if (overlayBox == null) throw new InvalidOperationException("OverlayBox can not be founded in this MetroWindow's template. Are you calling this before the window has loaded?");
+
             if (overlayBox.Visibility == Visibility.Visible && overlayBox.Opacity == 0.0)
                 return new System.Threading.Tasks.Task(() => { }); //No Task.FromResult in .NET 4.
 
@@ -582,6 +681,8 @@ namespace MahApps.Metro.Controls
         }
         public bool IsOverlayVisible()
         {
+            if (overlayBox == null) throw new InvalidOperationException("OverlayBox can not be founded in this MetroWindow's template. Are you calling this before the window has loaded?");
+
             return overlayBox.Visibility == Visibility.Visible && overlayBox.Opacity >= 0.7;
         }
         public void ShowOverlay()
@@ -607,26 +708,17 @@ namespace MahApps.Metro.Controls
 
         private void MetroWindow_Loaded(object sender, RoutedEventArgs e)
         {
+            if (EnableDWMDropShadow)
+            {
+                this.UseDropShadow();
+            }
+
             if (this.WindowTransitionsEnabled)
             {
                 VisualStateManager.GoToState(this, "AfterLoaded", true);
             }
 
-            // if UseNoneWindowStyle = true no title bar, window commands or min, max, close buttons should be shown
-            if (UseNoneWindowStyle)
-            {
-                if (LeftWindowCommandsPresenter != null)
-                {
-                    LeftWindowCommandsPresenter.Visibility = Visibility.Collapsed;
-                }
-                if (RightWindowCommandsPresenter != null)
-                {
-                    RightWindowCommandsPresenter.Visibility = Visibility.Collapsed;
-                }
-                ShowMinButton = false;
-                ShowMaxRestoreButton = false;
-                ShowCloseButton = false;
-            }
+            this.ToggleNoneWindowStyle(this.UseNoneWindowStyle);
 
             if (this.Flyouts == null)
             {
@@ -840,21 +932,26 @@ namespace MahApps.Metro.Controls
 
         protected void TitleBarMouseDown(object sender, MouseButtonEventArgs e)
         {
+            // if UseNoneWindowStyle = true no movement, no maximize please
             if (e.ChangedButton == MouseButton.Left && !this.UseNoneWindowStyle)
             {
-                // if UseNoneWindowStyle = true no movement, no maximize please
-                IntPtr windowHandle = new WindowInteropHelper(this).Handle;
-                UnsafeNativeMethods.ReleaseCapture();
-
                 var mPoint = Mouse.GetPosition(this);
+                
+                if (IsWindowDraggable)
+                {
+                    IntPtr windowHandle = new WindowInteropHelper(this).Handle;
+                    UnsafeNativeMethods.ReleaseCapture();
+                    var wpfPoint = this.PointToScreen(mPoint);
+                    var x = Convert.ToInt16(wpfPoint.X);
+                    var y = Convert.ToInt16(wpfPoint.Y);
+                    var lParam = (int) (uint) x | (y << 16);
+                    UnsafeNativeMethods.SendMessage(windowHandle, Constants.WM_NCLBUTTONDOWN, Constants.HT_CAPTION, lParam);
+                }
 
-                var wpfPoint = this.PointToScreen(mPoint);
-                var x = Convert.ToInt16(wpfPoint.X);
-                var y = Convert.ToInt16(wpfPoint.Y);
-                var lParam = (int)(uint)x | (y << 16);
-                UnsafeNativeMethods.SendMessage(windowHandle, Constants.WM_NCLBUTTONDOWN, Constants.HT_CAPTION, lParam);
-
-                if (e.ClickCount == 2 && (this.ResizeMode == ResizeMode.CanResizeWithGrip || this.ResizeMode == ResizeMode.CanResize) && mPoint.Y <= this.TitlebarHeight && this.TitlebarHeight > 0)
+                var canResize = this.ResizeMode == ResizeMode.CanResizeWithGrip || this.ResizeMode == ResizeMode.CanResize;
+                // we can maximize or restore the window if the title bar height is set (also if title bar is hidden)
+                var isMouseOnTitlebar = mPoint.Y <= this.TitlebarHeight && this.TitlebarHeight > 0;
+                if (e.ClickCount == 2 && canResize && isMouseOnTitlebar)
                 {
                     if (this.WindowState == WindowState.Maximized)
                     {
@@ -880,9 +977,23 @@ namespace MahApps.Metro.Controls
             }
         }
 
+        /// <summary>
+        /// Gets the template child with the given name.
+        /// </summary>
+        /// <typeparam name="T">The interface type inheirted from DependencyObject.</typeparam>
+        /// <param name="name">The name of the template child.</param>
         internal T GetPart<T>(string name) where T : DependencyObject
         {
             return GetTemplateChild(name) as T;
+        }
+
+        /// <summary>
+        /// Gets the template child with the given name.
+        /// </summary>
+        /// <param name="name">The name of the template child.</param>
+        internal DependencyObject GetPart(string name)
+        {
+            return GetTemplateChild(name);
         }
 
         private static void ShowSystemMenuPhysicalCoordinates(Window window, Point physicalScreenLocation)

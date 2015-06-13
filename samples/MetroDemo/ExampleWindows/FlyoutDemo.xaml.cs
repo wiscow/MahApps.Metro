@@ -2,6 +2,7 @@
 using System.Windows;
 using System.Windows.Input;
 using MahApps.Metro.Controls;
+using MahApps.Metro.Controls.Dialogs;
 using MetroDemo.Models;
 
 namespace MetroDemo.ExampleWindows
@@ -13,9 +14,8 @@ namespace MetroDemo.ExampleWindows
         
         public FlyoutDemo()
         {
-            this.DataContext = new MainWindowViewModel();
+            this.DataContext = new MainWindowViewModel(DialogCoordinator.Instance);
             this.InitializeComponent();
-            settingsFlyout.IsOpenChanged += (sender, args) => firstTB.Focus();
             this.Closing += (s, e) =>
                 {
                     if (_hideOnClose)
@@ -24,9 +24,18 @@ namespace MetroDemo.ExampleWindows
                         e.Cancel = true;
                     }
                 };
+
+            var mainWindow = (MetroWindow)this;
+            var windowPlacementSettings = mainWindow.GetWindowPlacementSettings();
+            if (windowPlacementSettings.UpgradeSettings)
+            {
+                windowPlacementSettings.Upgrade();
+                windowPlacementSettings.UpgradeSettings = false;
+                windowPlacementSettings.Save();
+            }
         }
 
-        public void ShowDialog()
+        public void Launch()
         {
             Owner = Application.Current.MainWindow;
             // only for this window, because we allow minimizing
